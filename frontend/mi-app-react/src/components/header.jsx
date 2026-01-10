@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleCart, selectTotalItems } from "@/store/cartSlice";
+import "@/styles/components/header.css";
 
 export function Header({ searchQuery, onSearchChange }) {
   const dispatch = useDispatch();
@@ -11,111 +12,100 @@ export function Header({ searchQuery, onSearchChange }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight">TechVault</span>
+    <header className="header">
+      <div className="header-container">
+        {/* Logo & Navigation */}
+        <div className="header-left">
+          <a href="/" className="header-logo">
+            <span className="header-logo-text">TechVault</span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <a
-              href="#products"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+          <nav className="header-nav">
+            <a href="#products" className="header-nav-link">
               Products
             </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <a href="#" className="header-nav-link">
               Deals
             </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <a href="#" className="header-nav-link">
               Support
             </a>
           </nav>
         </div>
 
-        <div className="hidden md:flex flex-1 max-w-md mx-6">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {/* Search Bar (Desktop) */}
+        <div className="header-search">
+          <div className="header-search-wrapper">
+            <Search className="header-search-icon" />
             <Input
               type="search"
               placeholder="Search products..."
-              className="w-full pl-10 bg-secondary border-0"
+              className="header-search-input input-base"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Actions */}
+        <div className="header-actions">
+          {/* Cart Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="relative"
+            className="header-cart-button"
             onClick={() => dispatch(toggleCart())}
             aria-label="Open cart"
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="header-icon" />
             {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+              <span className="header-cart-badge">
                 {totalItems}
               </span>
             )}
           </Button>
 
+          {/* Mobile Menu Toggle */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="header-menu-button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
+              <X className="header-icon" />
             ) : (
-              <Menu className="h-5 w-5" />
+              <Menu className="header-icon" />
             )}
           </Button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border p-4 space-y-4 bg-background">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="header-mobile-menu">
+          {/* Mobile Search */}
+          <div className="header-mobile-search">
+            <Search className="header-search-icon" />
             <Input
               type="search"
               placeholder="Search products..."
-              className="w-full pl-10 bg-secondary border-0"
+              className="header-search-input input-base"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
 
-          <nav className="flex flex-col gap-2">
-            <a
-              href="#products"
-              className="text-sm font-medium py-2 text-muted-foreground hover:text-foreground"
-            >
+          {/* Mobile Navigation */}
+          <nav className="header-mobile-nav">
+            <a href="#products" className="header-mobile-nav-link">
               Products
             </a>
-            <a
-              href="#"
-              className="text-sm font-medium py-2 text-muted-foreground hover:text-foreground"
-            >
+            <a href="#" className="header-mobile-nav-link">
               Deals
             </a>
-            <a
-              href="#"
-              className="text-sm font-medium py-2 text-muted-foreground hover:text-foreground"
-            >
+            <a href="#" className="header-mobile-nav-link">
               Support
             </a>
           </nav>

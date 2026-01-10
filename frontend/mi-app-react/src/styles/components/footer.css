@@ -1,14 +1,16 @@
-/* Footer Styles */
+/* Footer Component Styles */
 
+/* Main Footer */
 .footer {
   border-top: 1px solid hsl(var(--border));
   background-color: hsl(var(--card));
 }
 
+/* Container */
 .footer-container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 80rem; /* 1280px */
+  max-width: 80rem;
   padding: 3rem 1rem;
 }
 
@@ -26,6 +28,7 @@
   }
 }
 
+/* Grid Layout */
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -38,6 +41,7 @@
   }
 }
 
+/* Brand Section */
 .footer-brand {
   grid-column: span 2 / span 2;
 }
@@ -49,35 +53,39 @@
 }
 
 .footer-brand-name {
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.25rem;
   line-height: 1.75rem;
   font-weight: 700;
 }
 
 .footer-brand-description {
   margin-top: 0.75rem;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
 }
 
+/* Section Titles */
 .footer-section-title {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
+/* Links */
 .footer-links {
   margin-top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  list-style: none;
+  padding: 0;
 }
 
 .footer-link {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
   text-decoration: none;
@@ -88,6 +96,7 @@
   color: hsl(var(--foreground));
 }
 
+/* Bottom Section */
 .footer-bottom {
   margin-top: 3rem;
   border-top: 1px solid hsl(var(--border));
@@ -96,7 +105,8 @@
 }
 
 .footer-copyright {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
+  margin: 0;
 }

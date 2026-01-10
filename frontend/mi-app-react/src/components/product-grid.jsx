@@ -1,7 +1,9 @@
 import { ProductCard } from "@/components/product-card";
-import { useMemo } from "react";
+import { ProductModal } from "@/components/product-modal";
+import { useMemo, useState } from "react";
 import "@/styles/components/product-grid.css";
 
+// Sample product data
 const PRODUCTS = [
   {
     id: 1,
@@ -11,9 +13,10 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 2847,
     category: "Audio",
-    badge: "Best Seller",
+    badge: { text: "Best Seller", variant: "default" },
     image: "/placeholder.svg",
-    description: "Premium over-ear headphones with industry-leading noise cancellation",
+    description:
+      "Premium over-ear headphones with industry-leading noise cancellation technology. Experience immersive audio with up to 30 hours of battery life and supreme comfort for all-day wear.",
   },
   {
     id: 2,
@@ -22,9 +25,10 @@ const PRODUCTS = [
     rating: 4.9,
     reviews: 1923,
     category: "Wearables",
-    badge: "New",
+    badge: { text: "New", variant: "new" },
     image: "/placeholder.svg",
-    description: "Advanced health tracking and fitness features with always-on display",
+    description:
+      "Advanced health tracking and fitness features with always-on display. Monitor your heart rate, blood oxygen, sleep quality, and stay connected with smart notifications.",
   },
   {
     id: 3,
@@ -35,7 +39,8 @@ const PRODUCTS = [
     reviews: 3214,
     category: "Gaming",
     image: "/placeholder.svg",
-    description: "Ultra-responsive wireless gaming mouse with RGB lighting",
+    description:
+      "Ultra-responsive wireless gaming mouse with customizable RGB lighting. Features precision tracking up to 25,600 DPI, programmable buttons, and ultra-fast wireless connectivity for competitive gaming.",
   },
   {
     id: 4,
@@ -45,7 +50,8 @@ const PRODUCTS = [
     reviews: 892,
     category: "Cameras",
     image: "/placeholder.svg",
-    description: "Crystal-clear 4K video calls with auto-framing technology",
+    description:
+      "Crystal-clear 4K video calls with auto-framing technology and enhanced low-light performance. Perfect for streaming, video conferencing, and content creation with professional-grade image quality.",
   },
   {
     id: 5,
@@ -56,7 +62,8 @@ const PRODUCTS = [
     reviews: 1456,
     category: "Storage",
     image: "/placeholder.svg",
-    description: "Lightning-fast portable storage with USB-C connectivity",
+    description:
+      "Lightning-fast portable storage with USB-C connectivity. Transfer speeds up to 1050MB/s, durable aluminum housing, and password protection to keep your data secure on the go.",
   },
   {
     id: 6,
@@ -65,13 +72,19 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 2103,
     category: "Peripherals",
-    badge: "Popular",
+    badge: { text: "Popular", variant: "info" },
     image: "/placeholder.svg",
-    description: "Premium mechanical switches with customizable RGB backlighting",
+    description:
+      "Premium mechanical switches with customizable RGB backlighting and per-key illumination. Tactile feedback, N-key rollover, and dedicated media controls for the ultimate typing experience.",
   },
 ];
 
 export function ProductGrid({ searchQuery }) {
+  // Modal state
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Filter products based on search query
   const filteredProducts = useMemo(() => {
     if (!searchQuery) return PRODUCTS;
 
@@ -84,34 +97,62 @@ export function ProductGrid({ searchQuery }) {
     );
   }, [searchQuery]);
 
-  return (
-    <section id="products" className="product-grid-section">
-      <div className="product-grid-container">
-        <div className="product-grid-header">
-          <h2 className="product-grid-title">
-            {searchQuery ? "Search Results" : "Featured Products"}
-          </h2>
-          <p className="product-grid-subtitle">
-            {searchQuery
-              ? `Found ${filteredProducts.length} product${filteredProducts.length !== 1 ? "s" : ""}`
-              : "Discover our latest collection of premium electronics"}
-          </p>
-        </div>
+  const handleOpenModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
 
-        {filteredProducts.length === 0 ? (
-          <div className="product-grid-empty">
-            <p className="product-grid-empty-text">
-              No products found matching "{searchQuery}"
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  return (
+    <>
+      <section id="products" className="product-grid-section">
+        <div className="product-grid-container">
+          {/* Header Section */}
+          <div className="product-grid-header">
+            <h2 className="product-grid-title">
+              {searchQuery ? "Search Results" : "Featured Products"}
+            </h2>
+            <p className="product-grid-subtitle">
+              {searchQuery
+                ? `Found ${filteredProducts.length} product${
+                    filteredProducts.length !== 1 ? "s" : ""
+                  }`
+                : "Discover our latest collection of premium electronics"}
             </p>
           </div>
-        ) : (
-          <div className="product-grid">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+
+          {/* Empty State */}
+          {filteredProducts.length === 0 ? (
+            <div className="product-grid-empty">
+              <p className="product-grid-empty-text">
+                No products found matching "{searchQuery}"
+              </p>
+            </div>
+          ) : (
+            /* Product Grid */
+            <div className="product-grid">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onOpenModal={handleOpenModal}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Product Modal */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+    </>
   );
 }

@@ -1,14 +1,17 @@
 /* Hero Section Styles */
+
+/* Main Section */
 .hero-section {
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid hsl(var(--border));
 }
 
+/* Container */
 .hero-container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 80rem; /* 7xl */
+  max-width: 80rem;
   padding: 4rem 1rem;
 }
 
@@ -24,6 +27,7 @@
   }
 }
 
+/* Grid Layout */
 .hero-grid {
   display: grid;
   gap: 2rem;
@@ -37,12 +41,14 @@
   }
 }
 
+/* Content Section */
 .hero-content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
+/* Badge */
 .hero-badge-wrapper {
   display: inline-flex;
 }
@@ -59,6 +65,7 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* Title */
 .hero-title {
   font-size: 2.25rem;
   line-height: 2.5rem;
@@ -81,6 +88,7 @@
   }
 }
 
+/* Description */
 .hero-description {
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -89,12 +97,25 @@
   text-wrap: pretty;
 }
 
+/* Buttons */
 .hero-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
+.hero-button-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-button-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Image Section */
 .hero-image-wrapper {
   position: relative;
 }

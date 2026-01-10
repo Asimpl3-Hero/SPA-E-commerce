@@ -1,73 +1,127 @@
 /* Button Component Styles */
-@layer components {
-  /* Button base styles */
-  .btn-base {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md;
-    @apply text-sm font-medium transition-colors;
-    @apply ring-offset-background;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
-    @apply disabled:pointer-events-none disabled:opacity-50;
-  }
 
-  /* Button variants - Core */
-  .btn-default {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
-  }
+/* Button base styles */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: colors 0.2s;
+  outline: none;
+}
 
-  .btn-destructive {
-    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
-  }
+.btn-base:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
 
-  .btn-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
-  }
+.btn-base:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
 
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
-  }
+/* Button variants - Core */
+.btn-default {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
 
-  .btn-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground;
-  }
+.btn-default:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
 
-  .btn-link {
-    @apply text-primary underline-offset-4 hover:underline;
-  }
+.btn-destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
 
-  /* Button sizes */
-  .btn-size-default {
-    @apply h-10 px-4 py-2;
-  }
+.btn-destructive:hover {
+  background-color: hsl(var(--destructive) / 0.9);
+}
 
-  .btn-size-sm {
-    @apply h-9 rounded-md px-3;
-  }
+.btn-outline {
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+}
 
-  .btn-size-lg {
-    @apply h-11 rounded-md px-8;
-  }
+.btn-outline:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
 
-  .btn-size-icon {
-    @apply h-10 w-10;
-  }
+.btn-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
 
-  /* Custom button variants - Extended */
-  .btn-gradient {
-    @apply bg-gradient-to-r from-primary to-primary/80;
-    @apply text-primary-foreground hover:from-primary/90 hover:to-primary/70;
-  }
+.btn-secondary:hover {
+  background-color: hsl(var(--secondary) / 0.8);
+}
 
-  .btn-shine {
-    @apply relative overflow-hidden;
-  }
+.btn-ghost:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
 
-  .btn-shine::before {
-    content: '';
-    @apply absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent;
-    @apply transition-transform duration-500;
-  }
+.btn-link {
+  color: hsl(var(--primary));
+  text-underline-offset: 4px;
+}
 
-  .btn-shine:hover::before {
-    @apply translate-x-[100%];
-  }
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Button sizes */
+.btn-size-default {
+  height: 2.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.btn-size-sm {
+  height: 2.25rem;
+  border-radius: 0.375rem;
+  padding: 0 0.75rem;
+}
+
+.btn-size-lg {
+  height: 2.75rem;
+  border-radius: 0.375rem;
+  padding: 0 2rem;
+}
+
+.btn-size-icon {
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+/* Custom button variants - Extended */
+.btn-gradient {
+  background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+  color: hsl(var(--primary-foreground));
+}
+
+.btn-gradient:hover {
+  background-image: linear-gradient(to right, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.7));
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: transform 0.5s;
+}
+
+.btn-shine:hover::before {
+  transform: translateX(100%);
 }

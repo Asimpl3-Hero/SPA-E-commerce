@@ -6,20 +6,28 @@ import { useDispatch } from "react-redux";
 import { addItem, setCartOpen } from "@/store/cartSlice";
 import "@/styles/components/product-card.css";
 
-export function ProductCard({ product }) {
+export function ProductCard({ product, onOpenModal }) {
   const dispatch = useDispatch();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
     dispatch(addItem(product));
     dispatch(setCartOpen(true));
   };
 
+  const handleCardClick = () => {
+    if (onOpenModal) {
+      onOpenModal(product);
+    }
+  };
+
   return (
-    <Card className="product-card group">
+    <Card className="product-card" onClick={handleCardClick}>
+      {/* Product Image */}
       <div className="product-card-image-wrapper">
         {product.badge && (
-          <Badge className="product-card-badge">
-            {product.badge}
+          <Badge variant={product.badge.variant} className="product-card-badge">
+            {product.badge.text}
           </Badge>
         )}
         <img
@@ -29,7 +37,9 @@ export function ProductCard({ product }) {
         />
       </div>
 
+      {/* Product Details */}
       <CardContent className="product-card-content">
+        {/* Rating */}
         <div className="product-card-rating">
           <Star className="product-card-rating-icon" />
           <span className="product-card-rating-value">{product.rating}</span>
@@ -38,23 +48,19 @@ export function ProductCard({ product }) {
           </span>
         </div>
 
-        <p className="product-card-category">
-          {product.category}
-        </p>
+        {/* Category */}
+        <p className="product-card-category">{product.category}</p>
 
-        <h3 className="product-card-title">
-          {product.name}
-        </h3>
+        {/* Title */}
+        <h3 className="product-card-title">{product.name}</h3>
 
-        <p className="product-card-description">
-          {product.description}
-        </p>
+        {/* Description */}
+        <p className="product-card-description">{product.description}</p>
 
+        {/* Footer: Price & Add to Cart */}
         <div className="product-card-footer">
           <div className="product-card-prices">
-            <span className="product-card-price">
-              ${product.price}
-            </span>
+            <span className="product-card-price">${product.price}</span>
             {product.originalPrice && (
               <span className="product-card-original-price">
                 ${product.originalPrice}
@@ -62,7 +68,11 @@ export function ProductCard({ product }) {
             )}
           </div>
 
-          <Button size="sm" onClick={handleAddToCart} className="product-card-button">
+          <Button
+            size="sm"
+            onClick={handleAddToCart}
+            className="product-card-button"
+          >
             <Plus className="product-card-button-icon" />
             Add
           </Button>

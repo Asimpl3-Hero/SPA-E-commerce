@@ -1,10 +1,5 @@
 /* Main Stylesheet */
 
-/* Tailwind Directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Design System Variables */
 @import './variables.css';
 
@@ -15,7 +10,7 @@
 @import './components.css';
 
 /* UI Components */
-@import './ui/index.css';
+@import './components/ui/index.css';
 
 /* UX Enhancements */
-@import './ux/index.css';
+@import './components/ux/index.css';

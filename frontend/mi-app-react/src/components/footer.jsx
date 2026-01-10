@@ -4,7 +4,9 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
+        {/* Footer Grid */}
         <div className="footer-grid">
+          {/* Brand Section */}
           <div className="footer-brand">
             <span className="footer-brand-name">TechVault</span>
             <p className="footer-brand-description">
@@ -12,6 +14,7 @@ export function Footer() {
             </p>
           </div>
 
+          {/* Shop Links */}
           <div>
             <h3 className="footer-section-title">Shop</h3>
             <ul className="footer-links">
@@ -38,6 +41,7 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Support Links */}
           <div>
             <h3 className="footer-section-title">Support</h3>
             <ul className="footer-links">
@@ -64,6 +68,7 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* Company Links */}
           <div>
             <h3 className="footer-section-title">Company</h3>
             <ul className="footer-links">
@@ -91,6 +96,7 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Copyright Section */}
         <div className="footer-bottom">
           <p className="footer-copyright">
             &copy; 2025 TechVault. All rights reserved.

@@ -1,33 +1,67 @@
 /* Input Component Styles */
-@layer components {
-  /* Input base */
-  .input-base {
-    @apply flex h-10 w-full rounded-md border border-input;
-    @apply bg-background px-3 py-2 text-sm;
-    @apply ring-offset-background;
-    @apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
-    @apply placeholder:text-muted-foreground;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
-    @apply disabled:cursor-not-allowed disabled:opacity-50;
-  }
 
-  /* Search input variant */
-  .input-search {
-    @apply pl-10 bg-secondary border-0;
-  }
+/* Input base */
+.input-base {
+  display: flex;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
 
-  /* Input with icon wrapper */
-  .input-wrapper {
-    @apply relative w-full;
-  }
+.input-base::placeholder {
+  color: hsl(var(--muted-foreground));
+}
 
-  .input-icon-left {
-    @apply absolute left-3 top-1/2 -translate-y-1/2;
-    @apply h-4 w-4 text-muted-foreground;
-  }
+.input-base:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
 
-  .input-icon-right {
-    @apply absolute right-3 top-1/2 -translate-y-1/2;
-    @apply h-4 w-4 text-muted-foreground;
-  }
+.input-base:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input-base[type="file"] {
+  border: 0;
+  background-color: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Search input variant */
+.input-search {
+  padding-left: 2.5rem;
+  background-color: hsl(var(--secondary));
+  border: 0;
+}
+
+/* Input with icon wrapper */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: hsl(var(--muted-foreground));
 }

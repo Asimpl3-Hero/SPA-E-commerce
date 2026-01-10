@@ -1,15 +1,19 @@
-/* Product Card Styles */
+/* Product Card Component Styles */
+
+/* Card Container */
 .product-card {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   background-color: hsl(var(--card));
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .product-card:hover {
   border-color: hsl(var(--muted-foreground) / 0.3);
 }
 
+/* Image Section */
 .product-card-image-wrapper {
   position: relative;
   aspect-ratio: 1 / 1;
@@ -37,10 +41,13 @@
   transform: scale(1.05);
 }
 
+/* Content Section */
+
 .product-card-content {
   padding: 1rem;
 }
 
+/* Rating Section */
 .product-card-rating {
   display: flex;
   align-items: center;
@@ -51,8 +58,8 @@
 .product-card-rating-icon {
   height: 0.875rem;
   width: 0.875rem;
-  fill: rgb(234 179 8);
-  color: rgb(234 179 8);
+  fill: #eab308;
+  color: #eab308;
 }
 
 .product-card-rating-value {
@@ -67,19 +74,22 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* Category */
 .product-card-category {
   font-size: 0.75rem;
   line-height: 1rem;
   color: hsl(var(--muted-foreground));
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.25rem 0;
 }
 
+/* Title */
 .product-card-title {
   font-weight: 600;
+  font-size: 1rem;
   color: hsl(var(--foreground));
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.25rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   line-clamp: 1;
@@ -87,11 +97,12 @@
   overflow: hidden;
 }
 
+/* Description */
 .product-card-description {
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.75rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -99,6 +110,7 @@
   overflow: hidden;
 }
 
+/* Footer: Pricing & Action */
 .product-card-footer {
   display: flex;
   align-items: center;
@@ -125,7 +137,10 @@
   text-decoration: line-through;
 }
 
+/* Add to Cart Button */
 .product-card-button {
+  display: flex;
+  align-items: center;
   gap: 0.25rem;
 }
 

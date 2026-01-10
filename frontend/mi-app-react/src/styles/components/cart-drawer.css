@@ -1,12 +1,13 @@
-/* Cart Drawer Styles */
+/* Cart Drawer Component Styles */
 
-/* Backdrop */
+/* Backdrop Overlay */
 .cart-drawer-backdrop {
   position: fixed;
   inset: 0;
   background-color: hsl(var(--background) / 0.8);
   backdrop-filter: blur(8px);
   z-index: 50;
+  cursor: pointer;
 }
 
 /* Drawer Container */
@@ -16,7 +17,7 @@
   top: 0;
   height: 100%;
   width: 100%;
-  max-width: 28rem; /* 448px */
+  max-width: 28rem;
   background-color: hsl(var(--background));
   border-left: 1px solid hsl(var(--border));
   z-index: 50;
@@ -35,9 +36,15 @@
 }
 
 .cart-drawer-title {
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.125rem;
   line-height: 1.75rem;
   font-weight: 600;
+  margin: 0;
+}
+
+.cart-drawer-close-icon {
+  height: 1.25rem;
+  width: 1.25rem;
 }
 
 /* Empty State */
@@ -65,6 +72,7 @@
 
 .cart-drawer-empty-text {
   color: hsl(var(--muted-foreground));
+  margin: 0;
 }
 
 /* Items Container */
@@ -111,19 +119,21 @@
 
 .cart-item-name {
   font-weight: 500;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   line-clamp: 1;
   -webkit-box-orient: vertical;
+  margin: 0 0 0.25rem 0;
 }
 
 .cart-item-price {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
+  margin: 0;
 }
 
 .cart-item-actions {
@@ -145,10 +155,10 @@
 }
 
 .cart-item-quantity {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
-  width: 2rem;
+  min-width: 2rem;
   text-align: center;
 }
 
@@ -188,7 +198,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   line-height: 1.25rem;
   color: hsl(var(--muted-foreground));
 }
@@ -197,11 +207,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.125rem;
   line-height: 1.75rem;
   font-weight: 700;
   border-top: 1px solid hsl(var(--border));
   padding-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .cart-drawer-checkout-btn {

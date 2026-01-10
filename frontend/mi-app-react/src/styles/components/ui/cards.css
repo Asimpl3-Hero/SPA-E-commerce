@@ -1,42 +1,75 @@
 /* Card Component Styles */
-@layer components {
-  /* Card base */
-  .card-base {
-    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
-  }
 
-  /* CardContent base */
-  .card-content {
-    @apply p-6 pt-0;
-  }
+/* Card base */
+.card-base {
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
 
-  /* Card variants - Extended */
-  .card-hover {
-    @apply transition-all duration-300;
-    @apply hover:shadow-lg hover:-translate-y-1;
-  }
+/* CardContent base */
+.card-content {
+  padding: 1.5rem;
+  padding-top: 0;
+}
 
-  .card-glow {
-    @apply relative;
-    @apply before:absolute before:inset-0 before:rounded-lg before:opacity-0;
-    @apply before:bg-gradient-to-r before:from-primary/20 before:to-accent/20;
-    @apply before:blur-xl before:transition-opacity before:duration-300;
-    @apply hover:before:opacity-100;
-  }
+/* Card variants - Extended */
+.card-hover {
+  transition: all 0.3s;
+}
 
-  .card-bordered {
-    @apply border-2 border-border;
-    @apply hover:border-primary/50 transition-colors;
-  }
+.card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-0.25rem);
+}
 
-  /* Product card specific */
-  .product-card-image {
-    @apply aspect-square overflow-hidden rounded-t-lg;
-  }
+.card-glow {
+  position: relative;
+}
 
-  .product-card-badge {
-    @apply absolute top-3 left-3 z-10;
-    @apply bg-primary text-primary-foreground;
-    @apply px-3 py-1 rounded-full text-xs font-semibold;
-  }
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.5rem;
+  opacity: 0;
+  background-image: linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--accent) / 0.2));
+  filter: blur(1rem);
+  transition: opacity 0.3s;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+.card-bordered {
+  border: 2px solid hsl(var(--border));
+  transition: border-color 0.2s;
+}
+
+.card-bordered:hover {
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+/* Product card specific */
+.product-card-image {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.product-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }

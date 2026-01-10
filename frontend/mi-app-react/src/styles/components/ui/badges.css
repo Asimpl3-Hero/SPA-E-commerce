@@ -1,48 +1,104 @@
 /* Badge Component Styles */
-@layer components {
-  /* Badge base */
-  .badge-base {
-    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold;
-    @apply transition-colors;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
-  }
 
-  /* Badge variants - Core (from component) */
-  .badge-default {
-    @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/80;
-  }
+/* Badge base */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: colors 0.2s;
+}
 
-  .badge-secondary {
-    @apply border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
-  }
+.badge-base:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
 
-  .badge-destructive {
-    @apply border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80;
-  }
+/* Badge variants - Core (from component) */
+.badge-default {
+  border-color: transparent;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
 
-  .badge-outline {
-    @apply text-foreground;
-  }
+.badge-default:hover {
+  background-color: hsl(var(--primary) / 0.8);
+}
 
-  /* Badge variants - Extended */
-  .badge-success {
-    @apply border-transparent bg-green-500 text-white hover:bg-green-600;
-  }
+.badge-secondary {
+  border-color: transparent;
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
 
-  .badge-warning {
-    @apply border-transparent bg-yellow-500 text-white hover:bg-yellow-600;
-  }
+.badge-secondary:hover {
+  background-color: hsl(var(--secondary) / 0.8);
+}
 
-  .badge-info {
-    @apply border-transparent bg-blue-500 text-white hover:bg-blue-600;
-  }
+.badge-destructive {
+  border-color: transparent;
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
 
-  .badge-new {
-    @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white;
-    @apply animate-pulse;
-  }
+.badge-destructive:hover {
+  background-color: hsl(var(--destructive) / 0.8);
+}
 
-  .badge-sale {
-    @apply bg-gradient-to-r from-red-500 to-orange-500 text-white;
+.badge-outline {
+  color: hsl(var(--foreground));
+}
+
+/* Badge variants - Extended */
+.badge-success {
+  border-color: transparent;
+  background-color: #22c55e;
+  color: white;
+}
+
+.badge-success:hover {
+  background-color: #16a34a;
+}
+
+.badge-warning {
+  border-color: transparent;
+  background-color: #eab308;
+  color: white;
+}
+
+.badge-warning:hover {
+  background-color: #ca8a04;
+}
+
+.badge-info {
+  border-color: transparent;
+  background-color: #3b82f6;
+  color: white;
+}
+
+.badge-info:hover {
+  background-color: #2563eb;
+}
+
+.badge-new {
+  background-image: linear-gradient(to right, #3b82f6, #a855f7);
+  color: white;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.badge-sale {
+  background-image: linear-gradient(to right, #ef4444, #f97316);
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

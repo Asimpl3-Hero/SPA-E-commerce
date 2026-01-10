@@ -19,6 +19,7 @@ export function CartDrawer() {
   const isOpen = useSelector(selectIsCartOpen);
   const totalPrice = useSelector(selectCartTotal);
 
+  // Lock body scroll when drawer is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "unset";
     return () => {
@@ -30,25 +31,31 @@ export function CartDrawer() {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop Overlay */}
       <div
         className="cart-drawer-backdrop"
         onClick={() => dispatch(setCartOpen(false))}
+        aria-hidden="true"
       />
 
-      {/* Drawer */}
-      <div className="cart-drawer">
+      {/* Cart Drawer */}
+      <div className="cart-drawer" role="dialog" aria-labelledby="cart-title">
+        {/* Header */}
         <div className="cart-drawer-header">
-          <h2 className="cart-drawer-title">Your Cart</h2>
+          <h2 id="cart-title" className="cart-drawer-title">
+            Your Cart
+          </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => dispatch(setCartOpen(false))}
+            aria-label="Close cart"
           >
-            <X className="h-5 w-5" />
+            <X className="cart-drawer-close-icon" />
           </Button>
         </div>
 
+        {/* Empty State */}
         {items.length === 0 ? (
           <div className="cart-drawer-empty">
             <div className="cart-drawer-empty-icon-wrapper">
@@ -61,13 +68,12 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
+            {/* Cart Items */}
             <div className="cart-drawer-items">
               <div className="cart-drawer-items-list">
                 {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="cart-item"
-                  >
+                  <div key={item.id} className="cart-item">
+                    {/* Item Image */}
                     <div className="cart-item-image-wrapper">
                       <img
                         src={item.image || "/placeholder.svg"}
@@ -76,22 +82,26 @@ export function CartDrawer() {
                       />
                     </div>
 
+                    {/* Item Details */}
                     <div className="cart-item-details">
-                      <h3 className="cart-item-name">
-                        {item.name}
-                      </h3>
-                      <p className="cart-item-price">
-                        ${item.price}
-                      </p>
+                      <h3 className="cart-item-name">{item.name}</h3>
+                      <p className="cart-item-price">${item.price}</p>
 
+                      {/* Quantity Controls */}
                       <div className="cart-item-actions">
                         <Button
                           variant="outline"
                           size="icon"
                           className="cart-item-quantity-btn"
                           onClick={() =>
-                            dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))
+                            dispatch(
+                              updateQuantity({
+                                id: item.id,
+                                quantity: item.quantity - 1,
+                              })
+                            )
                           }
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="cart-item-quantity-icon" />
                         </Button>
@@ -105,8 +115,14 @@ export function CartDrawer() {
                           size="icon"
                           className="cart-item-quantity-btn"
                           onClick={() =>
-                            dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))
+                            dispatch(
+                              updateQuantity({
+                                id: item.id,
+                                quantity: item.quantity + 1,
+                              })
+                            )
                           }
+                          aria-label="Increase quantity"
                         >
                           <Plus className="cart-item-quantity-icon" />
                         </Button>
@@ -126,7 +142,9 @@ export function CartDrawer() {
               </div>
             </div>
 
+            {/* Footer with Totals */}
             <div className="cart-drawer-footer">
+              {/* Subtotal */}
               <div className="cart-drawer-subtotal">
                 <span className="cart-drawer-subtotal-label">Subtotal</span>
                 <span className="cart-drawer-subtotal-value">
@@ -134,21 +152,21 @@ export function CartDrawer() {
                 </span>
               </div>
 
+              {/* Shipping */}
               <div className="cart-drawer-shipping">
                 <span>Shipping</span>
                 <span>{totalPrice >= 99 ? "Free" : "$9.99"}</span>
               </div>
 
+              {/* Total */}
               <div className="cart-drawer-total">
                 <span>Total</span>
                 <span>
-                  $
-                  {(
-                    totalPrice + (totalPrice >= 99 ? 0 : 9.99)
-                  ).toFixed(2)}
+                  ${(totalPrice + (totalPrice >= 99 ? 0 : 9.99)).toFixed(2)}
                 </span>
               </div>
 
+              {/* Action Buttons */}
               <Button className="cart-drawer-checkout-btn" size="lg">
                 Checkout
               </Button>

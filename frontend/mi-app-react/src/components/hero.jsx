@@ -7,24 +7,32 @@ export function Hero() {
     <section className="hero-section">
       <div className="hero-container">
         <div className="hero-grid">
+          {/* Hero Content */}
           <div className="hero-content">
+            {/* Badge */}
             <div className="hero-badge-wrapper">
               <span className="hero-badge">
                 New Arrivals 2025
               </span>
             </div>
+
+            {/* Title */}
             <h1 className="hero-title">
               Discover the Future of Tech
             </h1>
+
+            {/* Description */}
             <p className="hero-description">
               Premium electronics and gadgets curated for those who demand the
               best. Free shipping on orders over $99.
             </p>
+
+            {/* Action Buttons */}
             <div className="hero-buttons">
-              <Button size="lg" className="gap-2" asChild>
+              <Button size="lg" className="hero-button-primary" asChild>
                 <a href="#products">
                   Shop Now
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="hero-button-icon" />
                 </a>
               </Button>
               <Button size="lg" variant="outline">
@@ -33,6 +41,7 @@ export function Hero() {
             </div>
           </div>
 
+          {/* Hero Image */}
           <div className="hero-image-wrapper">
             <div className="hero-image-container">
               <img
