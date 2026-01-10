@@ -1,5 +1,31 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+coverage/
+*.coverage
+.nyc_output
+*.lcov
+
+# Production Build
+dist/
+dist-ssr/
+build/
+out/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,18 +33,197 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Runtime Data
+pids/
+*.pid
+*.seed
+*.pid.lock
 
-# Editor directories and files
+# Cache Directories
+.npm/
+.eslintcache
+.cache/
+.parcel-cache/
+.vite/
+.next/
+.nuxt/
+.turbo/
+
+# Editor Directories and Files
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*.swn
+*~
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.AppleDouble
+.LSOverride
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# IDE - VSCode
+.history/
+*.code-workspace
+
+# IDE - JetBrains
+*.iml
+*.iws
+*.ipr
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - Visual Studio
+.suo
+.ntvs*
+.njsproj
+.sln
+.sw?
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+.cache
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Next.js
+.next/
+next-env.d.ts
+
+# Nuxt.js
+.nuxt
+
+# Gatsby
+.cache/
+public
+
+# Storybook
+storybook-static/
+
+# Vercel
+.vercel
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+
+# Sentry
+.sentryclirc
+
+# Lock files (uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local development
+*.local
+
+# Test files that shouldn't be committed
+test-results/
+playwright-report/
+e2e-results/
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Automated testing
+/__tests__/coverage/
+/__tests__/output/
+
+# Documentation
+.docusaurus/
+docs/.vitepress/cache
+docs/.vitepress/dist
+
+# Secrets and certificates
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+certificates/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*~
+*.orig
+*.rej
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
