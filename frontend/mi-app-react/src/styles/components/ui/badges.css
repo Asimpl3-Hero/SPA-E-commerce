@@ -1,0 +1,48 @@
+/* Badge Component Styles */
+@layer components {
+  /* Badge base */
+  .badge-base {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+    @apply transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Badge variants - Core (from component) */
+  .badge-default {
+    @apply border-transparent bg-primary text-primary-foreground hover:bg-primary/80;
+  }
+
+  .badge-secondary {
+    @apply border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .badge-destructive {
+    @apply border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80;
+  }
+
+  .badge-outline {
+    @apply text-foreground;
+  }
+
+  /* Badge variants - Extended */
+  .badge-success {
+    @apply border-transparent bg-green-500 text-white hover:bg-green-600;
+  }
+
+  .badge-warning {
+    @apply border-transparent bg-yellow-500 text-white hover:bg-yellow-600;
+  }
+
+  .badge-info {
+    @apply border-transparent bg-blue-500 text-white hover:bg-blue-600;
+  }
+
+  .badge-new {
+    @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white;
+    @apply animate-pulse;
+  }
+
+  .badge-sale {
+    @apply bg-gradient-to-r from-red-500 to-orange-500 text-white;
+  }
+}

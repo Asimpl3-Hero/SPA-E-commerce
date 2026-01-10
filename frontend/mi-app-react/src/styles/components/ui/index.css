@@ -1,0 +1,7 @@
+/* UI Components Index */
+/* Importa todos los estilos de componentes UI */
+
+@import './buttons.css';
+@import './cards.css';
+@import './inputs.css';
+@import './badges.css';

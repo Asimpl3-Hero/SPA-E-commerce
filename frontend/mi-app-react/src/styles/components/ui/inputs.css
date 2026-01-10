@@ -1,0 +1,33 @@
+/* Input Component Styles */
+@layer components {
+  /* Input base */
+  .input-base {
+    @apply flex h-10 w-full rounded-md border border-input;
+    @apply bg-background px-3 py-2 text-sm;
+    @apply ring-offset-background;
+    @apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Search input variant */
+  .input-search {
+    @apply pl-10 bg-secondary border-0;
+  }
+
+  /* Input with icon wrapper */
+  .input-wrapper {
+    @apply relative w-full;
+  }
+
+  .input-icon-left {
+    @apply absolute left-3 top-1/2 -translate-y-1/2;
+    @apply h-4 w-4 text-muted-foreground;
+  }
+
+  .input-icon-right {
+    @apply absolute right-3 top-1/2 -translate-y-1/2;
+    @apply h-4 w-4 text-muted-foreground;
+  }
+}

@@ -1,0 +1,135 @@
+/* Product Card Styles */
+.product-card {
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--card));
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  border-color: hsl(var(--muted-foreground) / 0.3);
+}
+
+.product-card-image-wrapper {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: hsl(var(--secondary));
+}
+
+.product-card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.product-card-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-card-image {
+  transform: scale(1.05);
+}
+
+.product-card-content {
+  padding: 1rem;
+}
+
+.product-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-card-rating-icon {
+  height: 0.875rem;
+  width: 0.875rem;
+  fill: rgb(234 179 8);
+  color: rgb(234 179 8);
+}
+
+.product-card-rating-value {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
+.product-card-rating-count {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.product-card-category {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.product-card-title {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-card-description {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-card-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.product-card-price {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.product-card-original-price {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  text-decoration: line-through;
+}
+
+.product-card-button {
+  gap: 0.25rem;
+}
+
+.product-card-button-icon {
+  height: 1rem;
+  width: 1rem;
+}

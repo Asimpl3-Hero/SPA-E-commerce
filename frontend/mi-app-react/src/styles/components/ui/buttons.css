@@ -1,0 +1,73 @@
+/* Button Component Styles */
+@layer components {
+  /* Button base styles */
+  .btn-base {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md;
+    @apply text-sm font-medium transition-colors;
+    @apply ring-offset-background;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Button variants - Core */
+  .btn-default {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .btn-outline {
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .btn-link {
+    @apply text-primary underline-offset-4 hover:underline;
+  }
+
+  /* Button sizes */
+  .btn-size-default {
+    @apply h-10 px-4 py-2;
+  }
+
+  .btn-size-sm {
+    @apply h-9 rounded-md px-3;
+  }
+
+  .btn-size-lg {
+    @apply h-11 rounded-md px-8;
+  }
+
+  .btn-size-icon {
+    @apply h-10 w-10;
+  }
+
+  /* Custom button variants - Extended */
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/80;
+    @apply text-primary-foreground hover:from-primary/90 hover:to-primary/70;
+  }
+
+  .btn-shine {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-shine::before {
+    content: '';
+    @apply absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply transition-transform duration-500;
+  }
+
+  .btn-shine:hover::before {
+    @apply translate-x-[100%];
+  }
+}

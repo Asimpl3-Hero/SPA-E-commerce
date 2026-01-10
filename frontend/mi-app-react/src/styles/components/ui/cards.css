@@ -1,0 +1,42 @@
+/* Card Component Styles */
+@layer components {
+  /* Card base */
+  .card-base {
+    @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* CardContent base */
+  .card-content {
+    @apply p-6 pt-0;
+  }
+
+  /* Card variants - Extended */
+  .card-hover {
+    @apply transition-all duration-300;
+    @apply hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .card-glow {
+    @apply relative;
+    @apply before:absolute before:inset-0 before:rounded-lg before:opacity-0;
+    @apply before:bg-gradient-to-r before:from-primary/20 before:to-accent/20;
+    @apply before:blur-xl before:transition-opacity before:duration-300;
+    @apply hover:before:opacity-100;
+  }
+
+  .card-bordered {
+    @apply border-2 border-border;
+    @apply hover:border-primary/50 transition-colors;
+  }
+
+  /* Product card specific */
+  .product-card-image {
+    @apply aspect-square overflow-hidden rounded-t-lg;
+  }
+
+  .product-card-badge {
+    @apply absolute top-3 left-3 z-10;
+    @apply bg-primary text-primary-foreground;
+    @apply px-3 py-1 rounded-full text-xs font-semibold;
+  }
+}
