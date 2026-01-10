@@ -1,23 +1,29 @@
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  selectCartItems,
-  selectIsCartOpen,
-  selectCartTotal,
-  setCartOpen,
-  removeItem,
-  updateQuantity,
-  clearCart,
-} from "@/store/cartSlice";
+import { useEffect, useRef } from "react";
+import { useCart } from "@/hooks/useCart";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useToggle } from "@/hooks/useToggle";
+import { CheckoutModal } from "./checkout-modal";
 import "@/styles/components/cart-drawer.css";
 
 export function CartDrawer() {
-  const dispatch = useDispatch();
-  const items = useSelector(selectCartItems);
-  const isOpen = useSelector(selectIsCartOpen);
-  const totalPrice = useSelector(selectCartTotal);
+  const {
+    items,
+    isOpen,
+    totalPrice,
+    incrementQuantity,
+    decrementQuantity,
+    removeFromCart,
+    emptyCart,
+    closeCart,
+  } = useCart();
+
+  const [isCheckoutOpen, toggleCheckout] = useToggle(false);
+  const drawerRef = useRef(null);
+
+  // Close cart when clicking outside
+  useOnClickOutside(drawerRef, closeCart);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -34,12 +40,12 @@ export function CartDrawer() {
       {/* Backdrop Overlay */}
       <div
         className="cart-drawer-backdrop"
-        onClick={() => dispatch(setCartOpen(false))}
+        onClick={closeCart}
         aria-hidden="true"
       />
 
       {/* Cart Drawer */}
-      <div className="cart-drawer" role="dialog" aria-labelledby="cart-title">
+      <div className="cart-drawer" role="dialog" aria-labelledby="cart-title" ref={drawerRef}>
         {/* Header */}
         <div className="cart-drawer-header">
           <h2 id="cart-title" className="cart-drawer-title">
@@ -48,7 +54,7 @@ export function CartDrawer() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => dispatch(setCartOpen(false))}
+            onClick={closeCart}
             aria-label="Close cart"
           >
             <X className="cart-drawer-close-icon" />
@@ -62,7 +68,7 @@ export function CartDrawer() {
               <ShoppingBag className="cart-drawer-empty-icon" />
             </div>
             <p className="cart-drawer-empty-text">Your cart is empty</p>
-            <Button onClick={() => dispatch(setCartOpen(false))}>
+            <Button onClick={closeCart}>
               Continue Shopping
             </Button>
           </div>
@@ -93,14 +99,7 @@ export function CartDrawer() {
                           variant="outline"
                           size="icon"
                           className="cart-item-quantity-btn"
-                          onClick={() =>
-                            dispatch(
-                              updateQuantity({
-                                id: item.id,
-                                quantity: item.quantity - 1,
-                              })
-                            )
-                          }
+                          onClick={() => decrementQuantity(item.id)}
                           aria-label="Decrease quantity"
                         >
                           <Minus className="cart-item-quantity-icon" />
@@ -114,14 +113,7 @@ export function CartDrawer() {
                           variant="outline"
                           size="icon"
                           className="cart-item-quantity-btn"
-                          onClick={() =>
-                            dispatch(
-                              updateQuantity({
-                                id: item.id,
-                                quantity: item.quantity + 1,
-                              })
-                            )
-                          }
+                          onClick={() => incrementQuantity(item.id)}
                           aria-label="Increase quantity"
                         >
                           <Plus className="cart-item-quantity-icon" />
@@ -131,7 +123,7 @@ export function CartDrawer() {
                           variant="ghost"
                           size="sm"
                           className="cart-item-remove"
-                          onClick={() => dispatch(removeItem(item.id))}
+                          onClick={() => removeFromCart(item.id)}
                         >
                           Remove
                         </Button>
@@ -167,14 +159,18 @@ export function CartDrawer() {
               </div>
 
               {/* Action Buttons */}
-              <Button className="cart-drawer-checkout-btn" size="lg">
+              <Button
+                className="cart-drawer-checkout-btn"
+                size="lg"
+                onClick={toggleCheckout}
+              >
                 Checkout
               </Button>
 
               <Button
                 variant="outline"
                 className="cart-drawer-clear-btn"
-                onClick={() => dispatch(clearCart())}
+                onClick={emptyCart}
               >
                 Clear Cart
               </Button>
@@ -182,6 +178,19 @@ export function CartDrawer() {
           </>
         )}
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={toggleCheckout}
+        onSuccess={(orderId) => {
+          console.log('Order created:', orderId);
+          toggleCheckout();
+          closeCart();
+          // TODO: Navigate to order confirmation page
+          // navigate(`/order-confirmation/${orderId}`);
+        }}
+      />
     </>
   );
 }

@@ -1,15 +1,23 @@
 import { Search, ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleCart, selectTotalItems } from "@/store/cartSlice";
+import { useEffect } from "react";
+import { useCart } from "@/hooks/useCart";
+import { useToggle } from "@/hooks/useToggle";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import "@/styles/components/header.css";
 
 export function Header({ searchQuery, onSearchChange }) {
-  const dispatch = useDispatch();
-  const totalItems = useSelector(selectTotalItems);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { totalItems, toggle: toggleCart } = useCart();
+  const [mobileMenuOpen, toggleMobileMenu, , closeMobileMenu] = useToggle(false);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  // Close mobile menu when switching to desktop view
+  useEffect(() => {
+    if (isDesktop && mobileMenuOpen) {
+      closeMobileMenu();
+    }
+  }, [isDesktop, mobileMenuOpen, closeMobileMenu]);
 
   return (
     <header className="header">
@@ -54,7 +62,7 @@ export function Header({ searchQuery, onSearchChange }) {
             variant="ghost"
             size="icon"
             className="header-cart-button"
-            onClick={() => dispatch(toggleCart())}
+            onClick={toggleCart}
             aria-label="Open cart"
           >
             <ShoppingCart className="header-icon" />
@@ -70,7 +78,7 @@ export function Header({ searchQuery, onSearchChange }) {
             variant="ghost"
             size="icon"
             className="header-menu-button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={toggleMobileMenu}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
