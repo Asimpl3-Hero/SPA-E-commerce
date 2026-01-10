@@ -1,0 +1,47 @@
+require 'rake'
+require_relative 'config/database'
+
+namespace :db do
+  desc 'Run database migrations'
+  task :migrate do
+    system('ruby db/migrate.rb')
+  end
+
+  desc 'Rollback database migrations'
+  task :rollback do
+    system('ruby db/migrate.rb down')
+  end
+
+  desc 'Seed the database with sample data'
+  task :seed do
+    system('ruby db/seeds/seed.rb')
+  end
+
+  desc 'Reset database (rollback, migrate, seed)'
+  task reset: [:rollback, :migrate, :seed] do
+    puts 'Database reset complete!'
+  end
+
+  desc 'Create database'
+  task :create do
+    # Extract database name from DATABASE_URL
+    require 'dotenv/load'
+    db_url = ENV['DATABASE_URL']
+    db_name = db_url.split('/').last.split('?').first
+
+    puts "Creating database: #{db_name}"
+    system("createdb #{db_name}")
+  end
+
+  desc 'Drop database'
+  task :drop do
+    require 'dotenv/load'
+    db_url = ENV['DATABASE_URL']
+    db_name = db_url.split('/').last.split('?').first
+
+    puts "Dropping database: #{db_name}"
+    system("dropdb #{db_name}")
+  end
+end
+
+task default: ['db:migrate']
