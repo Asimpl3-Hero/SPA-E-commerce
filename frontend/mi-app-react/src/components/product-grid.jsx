@@ -121,16 +121,34 @@ export function ProductGrid({ searchQuery }) {
               }
             />
           ) : (
-            /* Product Grid */
-            <div className="product-grid">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onOpenModal={handleOpenModal}
-                />
-              ))}
-            </div>
+            <>
+              {/* Product Grid */}
+              <div className="product-grid">
+                {visibleProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onOpenModal={handleOpenModal}
+                  />
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="product-grid-load-more">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleLoadMore}
+                  >
+                    Load More Products
+                  </Button>
+                  <p className="product-grid-load-more-text">
+                    Showing {visibleProducts.length} of {products.length} products
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

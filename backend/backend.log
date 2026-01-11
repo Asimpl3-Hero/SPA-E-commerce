@@ -1,5 +1,3 @@
-C:/Ruby34-x64/lib/ruby/3.4.0/win32/registry.rb:2: warning: fiddle/import is found in fiddle, which will no longer be part of the default gems starting from Ruby 3.5.0.
-You can add fiddle to your Gemfile or gemspec to silence this warning.
-I, [2026-01-10T23:29:05.883172 #52868]  INFO -- : (0.000789s) SET standard_conforming_strings = ON
-I, [2026-01-10T23:29:05.883978 #52868]  INFO -- : (0.000585s) SET client_min_messages = 'WARNING'
-I, [2026-01-10T23:29:05.884619 #52868]  INFO -- : (0.000534s) SET DateStyle = 'ISO'
+I, [2026-01-11T01:07:08.559701 #64024]  INFO -- : (0.000964s) SET standard_conforming_strings = ON
+I, [2026-01-11T01:07:08.560511 #64024]  INFO -- : (0.000612s) SET client_min_messages = 'WARNING'
+I, [2026-01-11T01:07:08.561319 #64024]  INFO -- : (0.000708s) SET DateStyle = 'ISO'

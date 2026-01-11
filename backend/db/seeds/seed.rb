@@ -248,7 +248,7 @@ products = [
   }
 ]
 
-products.take(3).each do |product|
+products.each do |product|
   DB[:products].insert(
     name: product[:name],
     price: product[:price],
@@ -265,5 +265,5 @@ products.take(3).each do |product|
   )
 end
 
-puts "Created #{products.take(3).size} products"
+puts "Created #{products.size} products"
 puts "Seeding completed successfully!"
