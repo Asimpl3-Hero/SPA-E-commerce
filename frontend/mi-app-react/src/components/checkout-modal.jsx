@@ -172,11 +172,10 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
         currency: "COP",
         payment_method: paymentMethodData,
         items: items.map((item) => ({
-          id: item.id,
+          product_id: item.id, // Use product_id instead of id for backend
           name: item.name,
-          price: item.price,
+          price_at_purchase: Math.round(item.price * 100), // Price in cents
           quantity: item.quantity,
-          image: item.image,
         })),
         shipping_address: {
           address_line_1: "Calle 123",

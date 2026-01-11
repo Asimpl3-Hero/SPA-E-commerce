@@ -2,7 +2,11 @@ require_relative '../../config/database'
 
 DB = Config::Database.connection
 
-# Clear existing data
+# Clear existing data (in order to respect foreign keys)
+DB[:orders].delete if DB.table_exists?(:orders)
+DB[:deliveries].delete if DB.table_exists?(:deliveries)
+DB[:transactions].delete if DB.table_exists?(:transactions)
+DB[:customers].delete if DB.table_exists?(:customers)
 DB[:products].delete
 DB[:categories].delete
 
@@ -260,10 +264,30 @@ products.each do |product|
     image: product[:image],
     badge_text: product[:badge_text],
     badge_variant: product[:badge_variant],
+    stock: rand(5..50), # Random stock between 5 and 50 units
     created_at: Time.now,
     updated_at: Time.now
   )
 end
 
 puts "Created #{products.size} products"
+
+# Seed sample customers
+sample_customers = [
+  { email: 'john.doe@example.com', full_name: 'John Doe', phone_number: '+573001234567' },
+  { email: 'jane.smith@example.com', full_name: 'Jane Smith', phone_number: '+573007654321' },
+  { email: 'carlos.garcia@example.com', full_name: 'Carlos García', phone_number: '+573009876543' }
+]
+
+sample_customers.each do |customer|
+  DB[:customers].insert(
+    email: customer[:email],
+    full_name: customer[:full_name],
+    phone_number: customer[:phone_number],
+    created_at: Time.now,
+    updated_at: Time.now
+  )
+end
+
+puts "Created #{sample_customers.size} sample customers"
 puts "Seeding completed successfully!"
