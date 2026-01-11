@@ -29,11 +29,7 @@ export function Header({ searchQuery, onSearchChange }) {
             <span className="header-logo-text">TechVault</span>
           </a>
 
-          <nav className="header-nav">
-            <a href="#products" className="header-nav-link">
-              Productos
-            </a>
-          </nav>
+          <nav className="header-nav"></nav>
         </div>
 
         {/* Search Bar (Desktop) */}

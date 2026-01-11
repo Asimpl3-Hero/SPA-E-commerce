@@ -1,19 +1,26 @@
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useDispatch } from "react-redux";
-import { addItem, setCartOpen } from "@/store/cartSlice";
+import { useState } from "react";
+import { addItem } from "@/store/cartSlice";
 import { formatCurrency } from "@/utils/formatters";
 import "@/styles/components/product-card.css";
 
 export function ProductCard({ product, onOpenModal }) {
   const dispatch = useDispatch();
+  const [isAdded, setIsAdded] = useState(false);
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
     dispatch(addItem(product));
-    dispatch(setCartOpen(true));
+
+    // Show feedback
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 2000);
   };
 
   const handleCardClick = () => {
@@ -72,10 +79,19 @@ export function ProductCard({ product, onOpenModal }) {
           <Button
             size="sm"
             onClick={handleAddToCart}
-            className="product-card-button"
+            className={`product-card-button ${isAdded ? 'product-card-button-added' : ''}`}
           >
-            <Plus className="product-card-button-icon" />
-            Add
+            {isAdded ? (
+              <>
+                <Check className="product-card-button-icon" />
+                Added
+              </>
+            ) : (
+              <>
+                <Plus className="product-card-button-icon" />
+                Add
+              </>
+            )}
           </Button>
         </div>
       </CardContent>

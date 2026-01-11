@@ -2,7 +2,7 @@
 
 /* Section Container - Más espacio para respirar */
 .product-grid-section {
-  padding: var(--space-16) 0;
+  padding: var(--space-12) 0;
   background-color: hsl(var(--background));
   position: relative;
 }
@@ -20,13 +20,13 @@
 
 @media (min-width: 640px) {
   .product-grid-section {
-    padding: var(--space-20) 0;
+    padding: var(--space-14) 0;
   }
 }
 
 @media (min-width: 1024px) {
   .product-grid-section {
-    padding: var(--space-24) 0;
+    padding: var(--space-16) 0;
   }
 }
 
@@ -121,14 +121,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid hsl(var(--border));
+  gap: var(--space-3);
+  margin-top: var(--space-12);
+  padding: var(--space-6);
+  background: hsl(var(--secondary) / 0.3);
+  border-radius: var(--space-4);
+  border: 1px solid hsl(var(--border) / 0.5);
 }
 
-.product-grid-load-more-text {
-  font-size: 0.875rem;
+.product-grid-load-more-count {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color: hsl(var(--muted-foreground));
   margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.product-grid-load-more-button {
+  min-width: 200px;
 }

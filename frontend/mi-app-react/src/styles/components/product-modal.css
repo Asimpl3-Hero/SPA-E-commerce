@@ -392,6 +392,16 @@
   height: 1.25rem;
   width: 1.25rem;
   margin-right: 0.5rem;
+  transition: transform var(--transition-base);
+}
+
+/* Estado de agregado al carrito */
+.product-modal-added {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.product-modal-added .product-modal-cart-icon {
+  animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Animations */

@@ -137,16 +137,17 @@ export function ProductGrid({ searchQuery }) {
               {/* Load More Button */}
               {hasMore && (
                 <div className="product-grid-load-more">
+                  <p className="product-grid-load-more-count">
+                    Showing {visibleProducts.length} of {products.length} products
+                  </p>
                   <Button
-                    size="lg"
-                    variant="outline"
+                    size="default"
+                    variant="secondary"
                     onClick={handleLoadMore}
+                    className="product-grid-load-more-button"
                   >
                     Load More Products
                   </Button>
-                  <p className="product-grid-load-more-text">
-                    Showing {visibleProducts.length} of {products.length} products
-                  </p>
                 </div>
               )}
             </>

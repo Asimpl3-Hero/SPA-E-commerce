@@ -1,7 +1,7 @@
-import { X, ShoppingCart, Star, Plus, Minus, Package, Truck, Shield, RefreshCw } from "lucide-react";
+import { X, ShoppingCart, Star, Plus, Minus, Package, Truck, Shield, RefreshCw, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { addItem, setCartOpen } from "@/store/cartSlice";
+import { addItem } from "@/store/cartSlice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
@@ -17,6 +17,7 @@ import "@/styles/components/product-modal.css";
 export function ProductModal({ product, isOpen, onClose }) {
   const dispatch = useDispatch();
   const [quantity, setQuantity] = useState(1);
+  const [isAdded, setIsAdded] = useState(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -49,8 +50,13 @@ export function ProductModal({ product, isOpen, onClose }) {
     for (let i = 0; i < quantity; i++) {
       dispatch(addItem(product));
     }
-    dispatch(setCartOpen(true));
-    onClose();
+
+    // Show feedback
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdded(false);
+      onClose();
+    }, 1500);
   };
 
   const stock = product.stock || 0;
@@ -231,11 +237,25 @@ export function ProductModal({ product, isOpen, onClose }) {
             {/* Add to Cart Button */}
             <Button
               onClick={handleAddToCart}
-              className="product-modal-add-to-cart"
-              disabled={!inStock}
+              className={`product-modal-add-to-cart ${isAdded ? 'product-modal-added' : ''}`}
+              disabled={!inStock || isAdded}
             >
-              <ShoppingCart className="product-modal-cart-icon" />
-              {!inStock ? 'Out of Stock' : `Add to Cart - ${formatCurrency(product.price * quantity)}`}
+              {!inStock ? (
+                <>
+                  <ShoppingCart className="product-modal-cart-icon" />
+                  Out of Stock
+                </>
+              ) : isAdded ? (
+                <>
+                  <Check className="product-modal-cart-icon" />
+                  Added to Cart!
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="product-modal-cart-icon" />
+                  Add to Cart - {formatCurrency(product.price * quantity)}
+                </>
+              )}
             </Button>
           </div>
         </div>
