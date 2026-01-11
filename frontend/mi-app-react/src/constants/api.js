@@ -3,68 +3,54 @@
  * Centralized location for all API endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4567/api';
-const API_VERSION = 'v1';
+// Default API base URL
+const DEFAULT_API_BASE_URL = 'http://localhost:4567/api';
 
-export const API_URL = `${API_BASE_URL}/${API_VERSION}`;
+// Helper to safely get environment variable with Jest compatibility
+const getApiBaseUrl = () => {
+  try {
+    // Try to access import.meta.env (Vite environment)
+    // Using indirect eval to avoid syntax error in Jest
+    const importMeta = new Function('return typeof import !== "undefined" ? import.meta : undefined')();
+    if (importMeta && importMeta.env && importMeta.env.VITE_API_BASE_URL) {
+      return importMeta.env.VITE_API_BASE_URL;
+    }
+  } catch (e) {
+    // Silent catch - import.meta not available
+  }
+
+  // Fallback to process.env for Jest/Node
+  if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
+    return process.env.VITE_API_BASE_URL;
+  }
+
+  return DEFAULT_API_BASE_URL;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+export const API_URL = API_BASE_URL;
 
 /**
  * API Endpoints
  */
 export const API_ENDPOINTS = {
+  // Checkout & Orders
+  CHECKOUT: {
+    CREATE_ORDER: '/checkout/create-order',
+    PROCESS_PAYMENT: '/checkout/process-payment',
+    GET_ORDER: '/checkout/order/:reference',
+    ACCEPTANCE_TOKEN: '/checkout/acceptance-token',
+  },
   // Products
   PRODUCTS: {
     LIST: '/products',
     DETAIL: '/products/:id',
-    SEARCH: '/products/search',
-    FEATURED: '/products/featured',
-    RELATED: '/products/:id/related',
-    REVIEWS: '/products/:id/reviews',
+    SEARCH: '/products?search=:query',
   },
-
   // Categories
   CATEGORIES: {
     LIST: '/categories',
-    DETAIL: '/categories/:id',
-    PRODUCTS: '/categories/:id/products',
-  },
-
-  // Orders (Guest Checkout)
-  ORDERS: {
-    CREATE: '/orders',
-    DETAIL: '/orders/:id',
-    TRACK: '/orders/:id/tracking',
-  },
-
-  // Payment
-  PAYMENT: {
-    CREATE_INTENT: '/payment/create-intent',
-    CONFIRM: '/payment/confirm',
-    METHODS: '/payment/methods',
-  },
-
-  // Shipping
-  SHIPPING: {
-    CALCULATE: '/shipping/calculate',
-    METHODS: '/shipping/methods',
-    TRACK: '/shipping/track/:trackingNumber',
-  },
-
-  // Search
-  SEARCH: {
-    PRODUCTS: '/search/products',
-    SUGGESTIONS: '/search/suggestions',
-  },
-
-  // Newsletter
-  NEWSLETTER: {
-    SUBSCRIBE: '/newsletter/subscribe',
-    UNSUBSCRIBE: '/newsletter/unsubscribe',
-  },
-
-  // Contact
-  CONTACT: {
-    SUBMIT: '/contact',
   },
 };
 
@@ -82,75 +68,4 @@ export const buildApiUrl = (endpoint, params = {}) => {
   });
 
   return url;
-};
-
-/**
- * HTTP Methods
- */
-export const HTTP_METHODS = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  PATCH: 'PATCH',
-  DELETE: 'DELETE',
-};
-
-/**
- * API Request Headers
- */
-export const API_HEADERS = {
-  CONTENT_TYPE: 'Content-Type',
-  ACCEPT: 'Accept',
-};
-
-/**
- * Content Types
- */
-export const CONTENT_TYPES = {
-  JSON: 'application/json',
-  FORM_DATA: 'multipart/form-data',
-  URL_ENCODED: 'application/x-www-form-urlencoded',
-};
-
-/**
- * API Response Status Codes
- */
-export const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  UNPROCESSABLE_ENTITY: 422,
-  INTERNAL_SERVER_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503,
-};
-
-/**
- * API Error Messages
- */
-export const API_ERROR_MESSAGES = {
-  NETWORK_ERROR: 'Network error. Please check your connection.',
-  TIMEOUT: 'Request timeout. Please try again.',
-  NOT_FOUND: 'The requested resource was not found.',
-  SERVER_ERROR: 'Server error. Please try again later.',
-  VALIDATION_ERROR: 'Please check your input and try again.',
-  UNKNOWN_ERROR: 'An unexpected error occurred. Please try again.',
-};
-
-/**
- * API Timeout (milliseconds)
- */
-export const API_TIMEOUT = 30000; // 30 seconds
-
-/**
- * Retry Configuration
- */
-export const RETRY_CONFIG = {
-  MAX_RETRIES: 3,
-  RETRY_DELAY: 1000, // 1 second
-  RETRY_STATUS_CODES: [408, 429, 500, 502, 503, 504],
 };
