@@ -3,10 +3,23 @@
 .about-section {
   width: 100%;
   padding: var(--space-16) 0;
+  background: hsl(var(--background));
+  position: relative;
+}
+
+/* Efecto de borde superior dorado sutil */
+.about-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
   background: linear-gradient(
-    180deg,
-    hsl(var(--background)) 0%,
-    hsl(var(--secondary) / 0.3) 100%
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.2) 50%,
+    transparent 100%
   );
 }
 

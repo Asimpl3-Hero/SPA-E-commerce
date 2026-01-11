@@ -25,7 +25,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
     isOpen: false,
     type: "info",
     title: "",
-    message: ""
+    message: "",
   });
 
   // Payment method selection
@@ -67,7 +67,10 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
 
     if (/^4/.test(cleanNumber)) {
       return { type: "visa", name: "Visa" };
-    } else if (/^5[1-5]/.test(cleanNumber) || /^2(22[1-9]|2[3-9][0-9]|[3-6][0-9]{2}|7[0-1][0-9]|720)/.test(cleanNumber)) {
+    } else if (
+      /^5[1-5]/.test(cleanNumber) ||
+      /^2(22[1-9]|2[3-9][0-9]|[3-6][0-9]{2}|7[0-1][0-9]|720)/.test(cleanNumber)
+    ) {
       return { type: "mastercard", name: "Mastercard" };
     } else if (/^3[47]/.test(cleanNumber)) {
       return { type: "amex", name: "American Express" };
@@ -84,13 +87,13 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
   const tokenizeCard = async () => {
     try {
       // Ensure exp_month is always 2 digits with leading zero
-      const formattedMonth = cardData.exp_month.padStart(2, '0');
+      const formattedMonth = cardData.exp_month.padStart(2, "0");
 
       const response = await fetch(`${WOMPI_API_URL}/tokens/cards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${WOMPI_PUBLIC_KEY}`,
+          Authorization: `Bearer ${WOMPI_PUBLIC_KEY}`,
         },
         body: JSON.stringify({
           number: cardData.number.replace(/\s/g, ""),
@@ -105,7 +108,11 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
 
       if (!response.ok) {
         console.error("Tokenization error:", data);
-        throw new Error(data.error?.reason || data.error?.messages?.join(", ") || "Failed to tokenize card");
+        throw new Error(
+          data.error?.reason ||
+            data.error?.messages?.join(", ") ||
+            "Failed to tokenize card"
+        );
       }
 
       return data.data.id;
@@ -123,7 +130,13 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
     }
 
     if (paymentMethod === "CARD") {
-      if (!cardData.number || !cardData.cvc || !cardData.exp_month || !cardData.exp_year || !cardData.card_holder) {
+      if (
+        !cardData.number ||
+        !cardData.cvc ||
+        !cardData.exp_month ||
+        !cardData.exp_year ||
+        !cardData.card_holder
+      ) {
         setError("Please fill in all card information");
         return false;
       }
@@ -235,13 +248,19 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 isOpen: true,
                 type: "success",
                 title: "¡Pago Exitoso!",
-                message: `Tu orden ${response.order.reference} ha sido procesada correctamente. Recibirás un correo de confirmación pronto.`
+                message: `Tu orden ${response.order.reference} ha sido procesada correctamente. Recibirás un correo de confirmación pronto.`,
               });
 
               // Close modal after showing success alert
               setTimeout(() => {
                 if (onSuccess) {
-                  onSuccess(response.order.reference);
+                  onSuccess(response.order.reference, {
+                    items,
+                    customerData,
+                    paymentMethod,
+                    cardData,
+                    summary,
+                  });
                 }
                 handleClose();
               }, 3000);
@@ -250,21 +269,24 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 isOpen: true,
                 type: "error",
                 title: "Pago Rechazado",
-                message: "Tu pago fue rechazado. Por favor, intenta con otro método de pago o tarjeta."
+                message:
+                  "Tu pago fue rechazado. Por favor, intenta con otro método de pago o tarjeta.",
               });
             } else if (transactionStatus === "ERROR") {
               setAlert({
                 isOpen: true,
                 type: "error",
                 title: "Error en el Pago",
-                message: "Ocurrió un error al procesar tu pago. Por favor, intenta nuevamente."
+                message:
+                  "Ocurrió un error al procesar tu pago. Por favor, intenta nuevamente.",
               });
             } else if (transactionStatus === "PENDING") {
               setAlert({
                 isOpen: true,
                 type: "warning",
                 title: "Pago en Proceso",
-                message: "Tu pago está tomando más tiempo del esperado. Verifica el estado de tu orden más tarde."
+                message:
+                  "Tu pago está tomando más tiempo del esperado. Verifica el estado de tu orden más tarde.",
               });
             }
           } else {
@@ -272,13 +294,21 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
           }
         } catch (pollingError) {
           console.error("Polling error:", pollingError);
-          throw new Error(pollingError.message || "Failed to verify payment status");
+          throw new Error(
+            pollingError.message || "Failed to verify payment status"
+          );
         }
       } else {
         // No transaction ID, order created without payment
         emptyCart();
         if (onSuccess) {
-          onSuccess(response.order.reference);
+          onSuccess(response.order.reference, {
+            items,
+            customerData,
+            paymentMethod,
+            cardData,
+            summary,
+          });
         }
         handleClose();
       }
@@ -288,7 +318,9 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
         isOpen: true,
         type: "error",
         title: "Error en el Proceso",
-        message: error.message || "No se pudo procesar el pago. Por favor, intenta nuevamente."
+        message:
+          error.message ||
+          "No se pudo procesar el pago. Por favor, intenta nuevamente.",
       });
     } finally {
       setIsProcessing(false);
@@ -327,7 +359,42 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="checkout-modal-backdrop" onClick={handleClose}>
       <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
         <div className="checkout-modal-header">
-          <h2>Checkout with Wompi</h2>
+          <h2>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                display: "inline-block",
+                marginRight: "8px",
+                verticalAlign: "middle",
+              }}
+            >
+              <path
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                stroke="url(#gradient1)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <defs>
+                <linearGradient
+                  id="gradient1"
+                  x1="3"
+                  y1="3"
+                  x2="21"
+                  y2="21"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stopColor="hsl(var(--primary))" />
+                  <stop offset="1" stopColor="hsl(var(--accent))" />
+                </linearGradient>
+              </defs>
+            </svg>
+            Secure Checkout
+          </h2>
           <button
             className="checkout-modal-close"
             onClick={handleClose}
@@ -444,23 +511,56 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
               <div className="payment-method-options">
                 <button
                   type="button"
-                  className={`payment-method-option ${paymentMethod === "CARD" ? "selected" : ""}`}
+                  className={`payment-method-option ${
+                    paymentMethod === "CARD" ? "selected" : ""
+                  }`}
                   onClick={() => setPaymentMethod("CARD")}
                   disabled={isProcessing}
                 >
                   <div className="payment-method-icon">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="2" y="5" width="20" height="14" rx="2" stroke="#3b82f6" strokeWidth="1.5" fill="#eff6ff"/>
-                      <path d="M2 9h20" stroke="#3b82f6" strokeWidth="1.5"/>
-                      <rect x="5" y="13" width="6" height="2" rx="0.5" fill="#3b82f6"/>
-                      <rect x="13" y="13" width="3" height="2" rx="0.5" fill="#3b82f6"/>
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="2"
+                        y="5"
+                        width="20"
+                        height="14"
+                        rx="2"
+                        stroke="#3b82f6"
+                        strokeWidth="1.5"
+                        fill="#eff6ff"
+                      />
+                      <path d="M2 9h20" stroke="#3b82f6" strokeWidth="1.5" />
+                      <rect
+                        x="5"
+                        y="13"
+                        width="6"
+                        height="2"
+                        rx="0.5"
+                        fill="#3b82f6"
+                      />
+                      <rect
+                        x="13"
+                        y="13"
+                        width="3"
+                        height="2"
+                        rx="0.5"
+                        fill="#3b82f6"
+                      />
                     </svg>
                   </div>
                   <span className="payment-method-name">Credit/Debit Card</span>
                 </button>
                 <button
                   type="button"
-                  className={`payment-method-option ${paymentMethod === "NEQUI" ? "selected" : ""}`}
+                  className={`payment-method-option ${
+                    paymentMethod === "NEQUI" ? "selected" : ""
+                  }`}
                   onClick={() => setPaymentMethod("NEQUI")}
                   disabled={isProcessing}
                 >
@@ -472,13 +572,28 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                       height="48"
                       onError={(e) => {
                         // Fallback to colored square with N if image fails to load
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "block";
                       }}
                     />
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'none' }}>
-                      <rect width="48" height="48" rx="8" fill="#CA0080"/>
-                      <text x="24" y="32" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="bold" fill="white" textAnchor="middle">
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 48 48"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ display: "none" }}
+                    >
+                      <rect width="48" height="48" rx="8" fill="#CA0080" />
+                      <text
+                        x="24"
+                        y="32"
+                        fontFamily="Arial, sans-serif"
+                        fontSize="20"
+                        fontWeight="bold"
+                        fill="white"
+                        textAnchor="middle"
+                      >
                         N
                       </text>
                     </svg>
@@ -494,7 +609,10 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 <div className="checkout-form">
                   <div className="checkout-form-field">
                     <label htmlFor="card-number">
-                      Card Number * {cardType && <span className="card-type-badge">{cardType.name}</span>}
+                      Card Number *{" "}
+                      {cardType && (
+                        <span className="card-type-badge">{cardType.name}</span>
+                      )}
                     </label>
                     <input
                       id="card-number"
@@ -503,7 +621,8 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                       value={cardData.number}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\s/g, "");
-                        const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
+                        const formatted =
+                          value.match(/.{1,4}/g)?.join(" ") || value;
                         setCardData({ ...cardData, number: formatted });
 
                         // Detect card type
@@ -540,8 +659,10 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                         value={cardData.exp_month}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, "");
-                          if (value === "" || (parseInt(value) >= 1 && parseInt(value) <= 12)) {
-                            setCardData({ ...cardData, exp_month: value });
+                          if (value.length <= 2) {
+                            if (value === "" || parseInt(value) <= 12) {
+                              setCardData({ ...cardData, exp_month: value });
+                            }
                           }
                         }}
                         maxLength="2"
@@ -582,9 +703,12 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 </div>
 
                 <div className="checkout-test-cards">
-                  <p className="checkout-test-cards-title">Test Cards (Sandbox):</p>
+                  <p className="checkout-test-cards-title">
+                    Test Cards (Sandbox):
+                  </p>
                   <p className="checkout-test-cards-info">
-                    Card: <strong>4242 4242 4242 4242</strong> | CVC: Any 3 digits | Exp: Any future date
+                    Card: <strong>4242 4242 4242 4242</strong> | CVC: Any 3
+                    digits | Exp: Any future date
                   </p>
                 </div>
               </>
@@ -610,16 +734,25 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                       maxLength="10"
                       disabled={isProcessing}
                     />
-                    <small style={{ color: "#6b7280", fontSize: "0.875rem", marginTop: "0.25rem" }}>
+                    <small
+                      style={{
+                        color: "#6b7280",
+                        fontSize: "0.875rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
                       Enter your 10-digit Nequi phone number
                     </small>
                   </div>
                 </div>
 
                 <div className="checkout-test-cards">
-                  <p className="checkout-test-cards-title">Test Nequi Numbers (Sandbox):</p>
+                  <p className="checkout-test-cards-title">
+                    Test Nequi Numbers (Sandbox):
+                  </p>
                   <p className="checkout-test-cards-info">
-                    Approved: <strong>3991111111</strong> | Declined: <strong>3992222222</strong>
+                    Approved: <strong>3991111111</strong> | Declined:{" "}
+                    <strong>3992222222</strong>
                   </p>
                 </div>
               </>
@@ -634,22 +767,82 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           {/* Actions */}
-          <div className="checkout-actions">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleClose}
-              disabled={isProcessing}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleCheckout}
-              disabled={isProcessing}
-            >
-              {isProcessing ? processingMessage || "Processing Payment..." : "Complete Payment"}
-            </Button>
+          <div
+            style={{
+              borderTop: "1px solid hsl(var(--border))",
+              paddingTop: "var(--space-4)",
+              marginTop: "var(--space-4)",
+            }}
+          >
+            <div className="checkout-actions">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleClose}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCheckout}
+                disabled={isProcessing}
+                style={{
+                  position: "relative",
+                  minWidth: "200px",
+                }}
+              >
+                {isProcessing ? (
+                  <>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{
+                        display: "inline-block",
+                        marginRight: "8px",
+                        animation: "spin 1s linear infinite",
+                      }}
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        opacity="0.25"
+                      />
+                      <path
+                        d="M12 2a10 10 0 0110 10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {processingMessage || "Processing..."}
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ display: "inline-block", marginRight: "8px" }}
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    Complete Payment
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

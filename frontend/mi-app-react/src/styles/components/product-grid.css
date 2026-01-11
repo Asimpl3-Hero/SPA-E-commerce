@@ -3,7 +3,12 @@
 /* Section Container - Más espacio para respirar */
 .product-grid-section {
   padding: var(--space-12) 0;
-  background-color: hsl(var(--background));
+  background: linear-gradient(
+    180deg,
+    hsl(var(--secondary) / 0.3) 0%,
+    hsl(var(--secondary) / 0.5) 50%,
+    hsl(var(--secondary) / 0.3) 100%
+  );
   position: relative;
 }
 
@@ -12,7 +17,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.02;
+  opacity: 0.03;
   background-image: radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0);
   background-size: 48px 48px;
   pointer-events: none;

@@ -1,5 +1,8 @@
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { SuccessModal } from "@/components/ui/success-modal";
+import { InvoiceModal } from "@/components/ui/invoice-modal";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
@@ -21,6 +24,24 @@ export function CartDrawer() {
   } = useCart();
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    orderReference: "",
+  });
+  const [invoiceModal, setInvoiceModal] = useState({
+    isOpen: false,
+    data: null,
+  });
+  const [lastPurchaseData, setLastPurchaseData] = useState(null);
+
+  console.log('🛒 CartDrawer render - lastPurchaseData:', lastPurchaseData);
+  console.log('🛒 CartDrawer render - invoiceModal:', invoiceModal);
+  const [alert, setAlert] = useState({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+  });
   const drawerRef = useRef(null);
 
   // Close cart when clicking outside (but not when checkout modal is open)
@@ -41,16 +62,95 @@ export function CartDrawer() {
   // Handle checkout - open checkout modal
   const handleCheckout = () => {
     if (items.length === 0) {
-      alert("Your cart is empty");
+      setAlert({
+        isOpen: true,
+        type: "warning",
+        title: "Carrito Vacío",
+        message: "Tu carrito está vacío. Agrega productos antes de proceder al pago.",
+      });
       return;
     }
 
     setIsCheckoutOpen(true);
   };
 
-  const handleCheckoutSuccess = (reference) => {
-    alert(`Payment successful! Order reference: ${reference}`);
+  const handleCheckoutSuccess = (reference, purchaseData) => {
+    console.log('🎯 handleCheckoutSuccess called with:', { reference, purchaseData });
+
+    // Close checkout modal
+    setIsCheckoutOpen(false);
+
+    // Clear cart
+    emptyCart();
+
+    // Save purchase data for invoice
+    const invoiceData = {
+      orderReference: reference,
+      date: new Date().toLocaleString('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      items: purchaseData.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      customer: {
+        name: purchaseData.customerData.name,
+        email: purchaseData.customerData.email,
+        phone: purchaseData.customerData.phone,
+        address: purchaseData.customerData.address || 'N/A',
+      },
+      payment: {
+        method: purchaseData.paymentMethod === 'CARD' ? 'Tarjeta de Crédito' : 'Nequi',
+        reference: reference,
+        last4: purchaseData.cardData?.number?.slice(-4) || null,
+      },
+      summary: {
+        subtotal: purchaseData.summary.subtotal,
+        iva: purchaseData.summary.iva,
+        shipping: purchaseData.summary.shipping,
+        total: purchaseData.summary.total,
+      },
+    };
+
+    console.log('📄 Invoice data created:', invoiceData);
+    setLastPurchaseData(invoiceData);
+
+    // Show success modal
+    setSuccessModal({
+      isOpen: true,
+      orderReference: reference,
+    });
+  };
+
+  const handleViewInvoice = () => {
+    console.log('👁️ handleViewInvoice called');
+    console.log('📦 lastPurchaseData:', lastPurchaseData);
+    console.log('🔍 invoiceModal state before:', invoiceModal);
+
+    // Close success modal
+    setSuccessModal({ isOpen: false, orderReference: "" });
+
+    // Open invoice modal with saved data
+    setInvoiceModal({
+      isOpen: true,
+      data: lastPurchaseData,
+    });
+
+    console.log('✅ Invoice modal should now open');
+  };
+
+  const handleContinueShopping = () => {
+    setSuccessModal({ isOpen: false, orderReference: "" });
     closeCart();
+  };
+
+  const handleAlertClose = () => {
+    setAlert({ ...alert, isOpen: false });
   };
 
   if (!isOpen) return null;
@@ -212,6 +312,34 @@ export function CartDrawer() {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         onSuccess={handleCheckoutSuccess}
+      />
+
+      {/* Alert Component */}
+      <Alert
+        isOpen={alert.isOpen}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={handleAlertClose}
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        orderReference={successModal.orderReference}
+        onViewInvoice={handleViewInvoice}
+        onContinueShopping={handleContinueShopping}
+        onClose={() => setSuccessModal({ isOpen: false, orderReference: "" })}
+      />
+
+      {/* Invoice Modal */}
+      <InvoiceModal
+        isOpen={invoiceModal.isOpen}
+        invoiceData={invoiceModal.data}
+        onClose={() => {
+          setInvoiceModal({ isOpen: false, data: null });
+          closeCart();
+        }}
       />
     </>
   );
