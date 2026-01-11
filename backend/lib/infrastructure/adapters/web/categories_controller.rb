@@ -16,16 +16,14 @@ module Infrastructure
 
           result = @get_all_categories.call
 
-          result.match(
-            ->(categories) {
-              status 200
-              Oj.dump(categories)
-            },
-            ->(error) {
-              status 500
-              Oj.dump({ error: error[:message] })
-            }
-          )
+          if result.success?
+            status 200
+            Oj.dump(result.value!, mode: :compat)
+          else
+            error = result.failure
+            status 500
+            Oj.dump({ error: error[:message] }, mode: :compat)
+          end
         end
       end
     end

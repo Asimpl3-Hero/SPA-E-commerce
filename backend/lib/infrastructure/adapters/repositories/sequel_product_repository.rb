@@ -1,5 +1,5 @@
-require_relative '../../../../application/ports/product_repository'
-require_relative '../../../../domain/entities/product'
+require_relative '../../../application/ports/product_repository'
+require_relative '../../../domain/entities/product'
 
 module Infrastructure
   module Adapters

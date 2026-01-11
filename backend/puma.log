@@ -1,0 +1,20 @@
+*** SIGUSR2 not implemented, signal based restart unavailable!
+*** SIGUSR1 not implemented, signal based restart unavailable!
+*** SIGHUP not implemented, signal based logs reopening unavailable!
+Puma starting in single mode...
+* Puma version: 6.6.1 ("Return to Forever")
+* Ruby version: ruby 3.4.7 (2025-10-08 revision 7a5688e2a2) +PRISM [x64-mingw-ucrt]
+*  Min threads: 0
+*  Max threads: 5
+*  Environment: development
+*          PID: 7140
+C:/Ruby34-x64/lib/ruby/3.4.0/win32/registry.rb:2: warning: fiddle/import is found in fiddle, which will no longer be part of the default gems starting from Ruby 3.5.0.
+You can add fiddle to your Gemfile or gemspec to silence this warning.
+I, [2026-01-10T23:29:33.258529 #7140]  INFO -- : (0.000827s) SET standard_conforming_strings = ON
+I, [2026-01-10T23:29:33.259286 #7140]  INFO -- : (0.000543s) SET client_min_messages = 'WARNING'
+I, [2026-01-10T23:29:33.259764 #7140]  INFO -- : (0.000406s) SET DateStyle = 'ISO'
+* Listening on http://0.0.0.0:4567
+Use Ctrl-C to stop
+I, [2026-01-10T23:29:47.918055 #7140]  INFO -- : (0.003012s) SELECT CAST(current_setting('server_version_num') AS integer) AS v
+I, [2026-01-10T23:29:47.936280 #7140]  INFO -- : (0.017803s) SELECT "pg_attribute"."attname" AS "pk" FROM "pg_class", "pg_attribute", "pg_index", "pg_namespace" WHERE (("pg_class"."oid" = "pg_attribute"."attrelid") AND ("pg_class"."relnamespace" = "pg_namespace"."oid") AND ("pg_class"."oid" = "pg_index"."indrelid") AND ("pg_index"."indkey"[0] = "pg_attribute"."attnum") AND ("pg_index"."indisprimary" = 't') AND ("pg_class"."oid" = CAST(CAST('"orders"' AS regclass) AS oid))) LIMIT 1
+I, [2026-01-10T23:29:55.548419 #7140]  INFO -- : (0.013280s) INSERT INTO "orders" ("reference", "customer_email", "customer_name", "customer_phone", "amount_in_cents", "currency", "status", "shipping_address", "items", "created_at", "updated_at") VALUES ('ORDER-1768105795-7149', 'test@example.com', 'Test User', '+573001234567', 10000, 'COP', 'pending', '{":address_line_1":"Test Address",":city":"Bogota",":region":"Bogota DC",":country":"CO",":phone_number":"+573001234567"}', '[{":id":1,":name":"Test Product",":price":100,":quantity":1}]', '2026-01-10 23:29:55.534816-0500', '2026-01-10 23:29:55.534817-0500') RETURNING "id"

@@ -1,5 +1,6 @@
 require 'sequel'
 require 'dotenv/load'
+require 'logger'
 
 module Config
   class Database

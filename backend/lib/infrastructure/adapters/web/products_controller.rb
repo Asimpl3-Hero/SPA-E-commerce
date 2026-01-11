@@ -53,23 +53,21 @@ module Infrastructure
             handle_result(result, success_status: 201)
           rescue Oj::ParseError
             status 400
-            Oj.dump({ error: 'Invalid JSON' })
+            Oj.dump({ error: 'Invalid JSON' }, mode: :compat)
           end
         end
 
         private
 
         def handle_result(result, success_status: 200)
-          result.match(
-            ->(value) {
-              status success_status
-              Oj.dump(value)
-            },
-            ->(error) {
-              status error_status(error[:type])
-              Oj.dump({ error: error[:message], details: error[:details] }.compact)
-            }
-          )
+          if result.success?
+            status success_status
+            Oj.dump(result.value!, mode: :compat)
+          else
+            error = result.failure
+            status error_status(error[:type])
+            Oj.dump({ error: error[:message], details: error[:details] }.compact, mode: :compat)
+          end
         end
 
         def error_status(type)

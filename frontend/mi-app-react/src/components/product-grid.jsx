@@ -5,6 +5,7 @@ import "@/styles/components/product-grid.css";
 import { getAllProducts, searchProducts } from "@/services/productService";
 import { LoadingSpinner } from "@/components/ux/loading-spinner";
 import { EmptyState } from "@/components/ux/empty-state";
+import { Button } from "@/components/ui/button";
 
 export function ProductGrid({ searchQuery }) {
   // Modal state
@@ -15,6 +16,10 @@ export function ProductGrid({ searchQuery }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Pagination state
+  const [visibleCount, setVisibleCount] = useState(6);
+  const PRODUCTS_PER_LOAD = 3;
 
   // Fetch products from backend
   useEffect(() => {
@@ -47,8 +52,8 @@ export function ProductGrid({ searchQuery }) {
         }));
 
         setProducts(transformedProducts);
+        setVisibleCount(6); // Reset visible count when products change
       } catch (err) {
-        console.error('Error fetching products:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -67,6 +72,14 @@ export function ProductGrid({ searchQuery }) {
     setIsModalOpen(false);
     setSelectedProduct(null);
   };
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + PRODUCTS_PER_LOAD);
+  };
+
+  // Get visible products
+  const visibleProducts = products.slice(0, visibleCount);
+  const hasMore = visibleCount < products.length;
 
   return (
     <>

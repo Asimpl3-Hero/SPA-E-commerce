@@ -12,6 +12,7 @@ require_relative 'lib/application/use_cases/create_product'
 require_relative 'lib/infrastructure/adapters/web/products_controller'
 require_relative 'lib/infrastructure/adapters/web/categories_controller'
 require_relative 'lib/infrastructure/adapters/web/health_controller'
+require_relative 'lib/infrastructure/adapters/web/checkout_controller'
 
 class App < Sinatra::Base
   # CORS Configuration
@@ -43,6 +44,7 @@ class App < Sinatra::Base
   use Infrastructure::Adapters::Web::HealthController
   use Infrastructure::Adapters::Web::ProductsController, use_cases: use_cases
   use Infrastructure::Adapters::Web::CategoriesController, use_cases: use_cases
+  use Infrastructure::Adapters::Web::CheckoutController
 
   # Error handling
   error do

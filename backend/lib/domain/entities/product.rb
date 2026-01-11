@@ -37,16 +37,16 @@ module Domain
 
       def to_h
         {
-          id: @id,
-          name: @name,
-          price: @price,
-          originalPrice: @original_price,
-          rating: @rating,
-          reviews: @reviews,
-          category: @category,
-          description: @description,
-          image: @image,
-          badge: badge_present? ? { text: @badge_text, variant: @badge_variant } : nil
+          'id' => @id,
+          'name' => @name,
+          'price' => @price,
+          'originalPrice' => @original_price,
+          'rating' => @rating,
+          'reviews' => @reviews,
+          'category' => @category,
+          'description' => @description,
+          'image' => @image,
+          'badge' => badge_present? ? { 'text' => @badge_text, 'variant' => @badge_variant } : nil
         }.compact
       end
 

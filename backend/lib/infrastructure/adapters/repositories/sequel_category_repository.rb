@@ -1,5 +1,5 @@
-require_relative '../../../../application/ports/category_repository'
-require_relative '../../../../domain/entities/category'
+require_relative '../../../application/ports/category_repository'
+require_relative '../../../domain/entities/category'
 
 module Infrastructure
   module Adapters

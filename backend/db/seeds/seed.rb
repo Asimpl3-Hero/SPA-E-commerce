@@ -209,10 +209,46 @@ products = [
     image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&h=500&fit=crop',
     badge_text: nil,
     badge_variant: nil
+  },
+  {
+    name: 'Smartphone Stand Adjustable',
+    price: 24.99,
+    original_price: 34.99,
+    rating: 4.7,
+    reviews: 3456,
+    category: 'Peripherals',
+    description: 'Universal adjustable phone stand with sturdy aluminum construction, 360-degree rotation, and non-slip base. Perfect for desk, kitchen, or bedside use.',
+    image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&h=500&fit=crop',
+    badge_text: 'Best Seller',
+    badge_variant: 'default'
+  },
+  {
+    name: 'Wireless Charging Pad 15W',
+    price: 39.99,
+    original_price: nil,
+    rating: 4.8,
+    reviews: 2145,
+    category: 'Peripherals',
+    description: 'Fast 15W wireless charging pad with LED indicator, overheat protection, and universal compatibility. Works with all Qi-enabled devices.',
+    image: 'https://images.unsplash.com/photo-1591290619762-c588f8e4d6d3?w=500&h=500&fit=crop',
+    badge_text: 'New',
+    badge_variant: 'new'
+  },
+  {
+    name: 'Laptop Backpack Water-Resistant',
+    price: 59.99,
+    original_price: 79.99,
+    rating: 4.9,
+    reviews: 4231,
+    category: 'Storage',
+    description: 'Premium water-resistant backpack with padded laptop compartment (up to 17"), USB charging port, multiple pockets, and ergonomic design for daily commute.',
+    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop',
+    badge_text: 'Popular',
+    badge_variant: 'info'
   }
 ]
 
-products.each do |product|
+products.take(3).each do |product|
   DB[:products].insert(
     name: product[:name],
     price: product[:price],
@@ -229,5 +265,5 @@ products.each do |product|
   )
 end
 
-puts "Created #{products.size} products"
+puts "Created #{products.take(3).size} products"
 puts "Seeding completed successfully!"

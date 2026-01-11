@@ -12,9 +12,9 @@ module Domain
 
       def to_h
         {
-          id: @id,
-          name: @name,
-          slug: @slug
+          'id' => @id,
+          'name' => @name,
+          'slug' => @slug
         }
       end
     end
