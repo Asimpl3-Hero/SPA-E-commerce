@@ -13,8 +13,11 @@ import {
   getNestedValue,
   setNestedValue,
   sleep,
+  retry,
   createQueryString,
   parseQueryString,
+  copyToClipboard,
+  scrollToElement,
 } from '../helpers';
 
 describe('helpers', () => {
@@ -401,6 +404,290 @@ describe('helpers', () => {
 
     test('handles invalid input', () => {
       expect(parseQueryString(null)).toEqual({});
+    });
+  });
+
+  describe('copyToClipboard', () => {
+    const originalNavigator = global.navigator;
+    const originalWindow = global.window;
+
+    afterEach(() => {
+      global.navigator = originalNavigator;
+      global.window = originalWindow;
+    });
+
+    test('uses clipboard API when available in secure context', async () => {
+      const mockWriteText = jest.fn().mockResolvedValue();
+      global.navigator = {
+        clipboard: {
+          writeText: mockWriteText,
+        },
+      };
+      global.window = { isSecureContext: true };
+
+      const result = await copyToClipboard('test text');
+
+      expect(mockWriteText).toHaveBeenCalledWith('test text');
+      expect(result).toBe(true);
+    });
+
+    test('uses fallback when clipboard API not available', async () => {
+      const mockTextArea = {
+        value: '',
+        style: {},
+        focus: jest.fn(),
+        select: jest.fn(),
+      };
+
+      global.navigator = {};
+      global.window = { isSecureContext: false };
+
+      const originalCreateElement = document.createElement;
+      const originalAppendChild = document.body.appendChild;
+      const originalRemoveChild = document.body.removeChild;
+      const originalExecCommand = document.execCommand;
+
+      document.createElement = jest.fn().mockReturnValue(mockTextArea);
+      document.body.appendChild = jest.fn();
+      document.body.removeChild = jest.fn();
+      document.execCommand = jest.fn().mockReturnValue(true);
+
+      const result = await copyToClipboard('fallback text');
+
+      expect(mockTextArea.value).toBe('fallback text');
+      expect(document.body.appendChild).toHaveBeenCalledWith(mockTextArea);
+      expect(mockTextArea.focus).toHaveBeenCalled();
+      expect(mockTextArea.select).toHaveBeenCalled();
+      expect(document.execCommand).toHaveBeenCalledWith('copy');
+      expect(document.body.removeChild).toHaveBeenCalledWith(mockTextArea);
+      expect(result).toBe(true);
+
+      // Restore
+      document.createElement = originalCreateElement;
+      document.body.appendChild = originalAppendChild;
+      document.body.removeChild = originalRemoveChild;
+      document.execCommand = originalExecCommand;
+    });
+
+    test('returns false when fallback copy fails', async () => {
+      const mockTextArea = {
+        value: '',
+        style: {},
+        focus: jest.fn(),
+        select: jest.fn(),
+      };
+
+      global.navigator = {};
+      global.window = { isSecureContext: false };
+
+      const originalCreateElement = document.createElement;
+      const originalAppendChild = document.body.appendChild;
+      const originalRemoveChild = document.body.removeChild;
+      const originalExecCommand = document.execCommand;
+
+      document.createElement = jest.fn().mockReturnValue(mockTextArea);
+      document.body.appendChild = jest.fn();
+      document.body.removeChild = jest.fn();
+      document.execCommand = jest.fn().mockReturnValue(false);
+
+      const result = await copyToClipboard('test');
+
+      expect(result).toBe(false);
+
+      // Restore
+      document.createElement = originalCreateElement;
+      document.body.appendChild = originalAppendChild;
+      document.body.removeChild = originalRemoveChild;
+      document.execCommand = originalExecCommand;
+    });
+
+    test('returns false on error', async () => {
+      const mockWriteText = jest.fn().mockRejectedValue(new Error('Failed'));
+      global.navigator = {
+        clipboard: {
+          writeText: mockWriteText,
+        },
+      };
+      global.window = { isSecureContext: true };
+
+      const result = await copyToClipboard('test');
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('scrollToElement', () => {
+    test('scrolls to element by selector', () => {
+      const mockScrollIntoView = jest.fn();
+      const mockElement = { scrollIntoView: mockScrollIntoView };
+      document.querySelector = jest.fn().mockReturnValue(mockElement);
+
+      scrollToElement('.test-class');
+
+      expect(document.querySelector).toHaveBeenCalledWith('.test-class');
+      expect(mockScrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    });
+
+    test('scrolls to element by HTMLElement', () => {
+      const mockScrollIntoView = jest.fn();
+      const mockElement = { scrollIntoView: mockScrollIntoView };
+
+      scrollToElement(mockElement);
+
+      expect(mockScrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    });
+
+    test('accepts custom options', () => {
+      const mockScrollIntoView = jest.fn();
+      const mockElement = { scrollIntoView: mockScrollIntoView };
+      document.querySelector = jest.fn().mockReturnValue(mockElement);
+
+      scrollToElement('.test', { behavior: 'auto', block: 'center' });
+
+      expect(mockScrollIntoView).toHaveBeenCalledWith({
+        behavior: 'auto',
+        block: 'center',
+        inline: 'nearest',
+      });
+    });
+
+    test('does nothing if element not found', () => {
+      document.querySelector = jest.fn().mockReturnValue(null);
+
+      expect(() => scrollToElement('.nonexistent')).not.toThrow();
+      expect(document.querySelector).toHaveBeenCalledWith('.nonexistent');
+    });
+  });
+
+  describe('retry', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('returns result on first success', async () => {
+      const mockFn = jest.fn().mockResolvedValue('success');
+
+      const resultPromise = retry(mockFn, 3, 100);
+      const result = await resultPromise;
+
+      expect(result).toBe('success');
+      expect(mockFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('retries on failure and eventually succeeds', async () => {
+      const mockFn = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('fail 1'))
+        .mockRejectedValueOnce(new Error('fail 2'))
+        .mockResolvedValue('success');
+
+      const resultPromise = retry(mockFn, 3, 10);
+
+      // Advance timers for first retry
+      await jest.runAllTimersAsync();
+
+      const result = await resultPromise;
+
+      expect(result).toBe('success');
+      expect(mockFn).toHaveBeenCalledTimes(3);
+    });
+
+    test('throws error after all retries exhausted', async () => {
+      const mockFn = jest.fn().mockRejectedValue(new Error('persistent failure'));
+
+      const resultPromise = retry(mockFn, 2, 10);
+
+      // Advance timers for all retries
+      await jest.runAllTimersAsync();
+
+      await expect(resultPromise).rejects.toThrow('persistent failure');
+      expect(mockFn).toHaveBeenCalledTimes(3); // Initial + 2 retries
+    });
+
+    test('waits specified delay between retries', async () => {
+      const mockFn = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValue('success');
+
+      const resultPromise = retry(mockFn, 2, 100);
+
+      // Should have called once initially
+      expect(mockFn).toHaveBeenCalledTimes(1);
+
+      // Advance timers to trigger retry
+      await jest.runAllTimersAsync();
+
+      await resultPromise;
+
+      expect(mockFn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('deepMerge edge cases', () => {
+    test('adds new nested object keys from source when key does not exist in target', () => {
+      const target = { a: { b: 1 } };
+      const source = { a: { c: 2 } };
+
+      const result = deepMerge(target, source);
+
+      expect(result.a.b).toBe(1);
+      expect(result.a.c).toBe(2);
+    });
+
+    test('adds completely new nested object from source', () => {
+      const target = { existing: 'value' };
+      const source = { newNested: { deep: { value: 42 } } };
+
+      const result = deepMerge(target, source);
+
+      expect(result.existing).toBe('value');
+      expect(result.newNested).toEqual({ deep: { value: 42 } });
+    });
+  });
+
+  describe('sortBy edge cases', () => {
+    test('maintains stable order when values are equal', () => {
+      const items = [
+        { id: 'a', value: 5 },
+        { id: 'b', value: 5 },
+        { id: 'c', value: 5 },
+      ];
+
+      const sorted = sortBy(items, 'value');
+
+      expect(sorted).toHaveLength(3);
+      expect(sorted[0].value).toBe(5);
+      expect(sorted[1].value).toBe(5);
+      expect(sorted[2].value).toBe(5);
+    });
+
+    test('sorts correctly with mix of equal and different values', () => {
+      const items = [
+        { id: 'a', value: 2 },
+        { id: 'b', value: 1 },
+        { id: 'c', value: 1 },
+        { id: 'd', value: 3 },
+      ];
+
+      const sorted = sortBy(items, 'value', 'asc');
+
+      expect(sorted[0].value).toBe(1);
+      expect(sorted[1].value).toBe(1);
+      expect(sorted[2].value).toBe(2);
+      expect(sorted[3].value).toBe(3);
     });
   });
 });
