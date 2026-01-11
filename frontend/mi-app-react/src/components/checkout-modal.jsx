@@ -3,11 +3,12 @@ import { useCart } from "@/hooks/useCart";
 import { formatCurrency } from "@/utils/formatters";
 import { createOrder } from "@/services/checkoutService";
 import { Button } from "./ui/button";
+import { Alert } from "./ui/alert";
 import "@/styles/components/checkout-modal.css";
 
 // Wompi configuration
+const WOMPI_API_URL = "https://api-sandbox.co.uat.wompi.dev/v1";
 const WOMPI_PUBLIC_KEY = "pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7";
-const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
 
 /**
  * CheckoutModal Component
@@ -16,7 +17,16 @@ const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
 export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
   const { items, getCartSummary, emptyCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState("");
   const [error, setError] = useState(null);
+
+  // Alert state
+  const [alert, setAlert] = useState({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: ""
+  });
 
   // Payment method selection
   const [paymentMethod, setPaymentMethod] = useState("CARD"); // CARD or NEQUI
@@ -72,28 +82,37 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
 
   // Tokenize card using Wompi API
   const tokenizeCard = async () => {
-    const response = await fetch(`${WOMPI_API_URL}/tokens/cards`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${WOMPI_PUBLIC_KEY}`,
-      },
-      body: JSON.stringify({
-        number: cardData.number.replace(/\s/g, ""),
-        cvc: cardData.cvc,
-        exp_month: cardData.exp_month,
-        exp_year: cardData.exp_year,
-        card_holder: cardData.card_holder,
-      }),
-    });
+    try {
+      // Ensure exp_month is always 2 digits with leading zero
+      const formattedMonth = cardData.exp_month.padStart(2, '0');
 
-    const data = await response.json();
+      const response = await fetch(`${WOMPI_API_URL}/tokens/cards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${WOMPI_PUBLIC_KEY}`,
+        },
+        body: JSON.stringify({
+          number: cardData.number.replace(/\s/g, ""),
+          cvc: cardData.cvc,
+          exp_month: formattedMonth,
+          exp_year: cardData.exp_year,
+          card_holder: cardData.card_holder,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(data.error?.reason || "Failed to tokenize card");
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Tokenization error:", data);
+        throw new Error(data.error?.reason || data.error?.messages?.join(", ") || "Failed to tokenize card");
+      }
+
+      return data.data.id;
+    } catch (error) {
+      console.error("Tokenization request failed:", error);
+      throw error;
     }
-
-    return data.data.id;
   };
 
   // Validate form data
@@ -143,12 +162,14 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
     }
 
     setIsProcessing(true);
+    setProcessingMessage("Processing payment...");
 
     try {
       let paymentMethodData;
 
       if (paymentMethod === "CARD") {
         // Step 1: Tokenize card with Wompi
+        setProcessingMessage("Tokenizing card...");
         const cardToken = await tokenizeCard();
 
         paymentMethodData = {
@@ -164,6 +185,7 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
       }
 
       // Step 2: Create order in backend with payment info
+      setProcessingMessage("Creating order...");
       const orderData = {
         customer_email: customerData.email,
         customer_name: customerData.name,
@@ -192,17 +214,85 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
         throw new Error(response.error || "Failed to create order");
       }
 
-      // Step 3: Payment processed successfully
-      emptyCart();
-      if (onSuccess) {
-        onSuccess(response.order.reference);
+      // Step 3: Poll transaction status if transaction was created
+      if (response.transaction && response.transaction.id) {
+        const transactionId = response.transaction.id;
+
+        try {
+          setProcessingMessage("Verifying payment status...");
+          const statusResponse = await fetch(
+            `http://localhost:4567/api/checkout/transaction-status/${transactionId}`
+          );
+          const statusData = await statusResponse.json();
+
+          if (statusData.success) {
+            const transactionStatus = statusData.transaction.status;
+
+            if (transactionStatus === "APPROVED") {
+              // Payment approved
+              emptyCart();
+              setAlert({
+                isOpen: true,
+                type: "success",
+                title: "¡Pago Exitoso!",
+                message: `Tu orden ${response.order.reference} ha sido procesada correctamente. Recibirás un correo de confirmación pronto.`
+              });
+
+              // Close modal after showing success alert
+              setTimeout(() => {
+                if (onSuccess) {
+                  onSuccess(response.order.reference);
+                }
+                handleClose();
+              }, 3000);
+            } else if (transactionStatus === "DECLINED") {
+              setAlert({
+                isOpen: true,
+                type: "error",
+                title: "Pago Rechazado",
+                message: "Tu pago fue rechazado. Por favor, intenta con otro método de pago o tarjeta."
+              });
+            } else if (transactionStatus === "ERROR") {
+              setAlert({
+                isOpen: true,
+                type: "error",
+                title: "Error en el Pago",
+                message: "Ocurrió un error al procesar tu pago. Por favor, intenta nuevamente."
+              });
+            } else if (transactionStatus === "PENDING") {
+              setAlert({
+                isOpen: true,
+                type: "warning",
+                title: "Pago en Proceso",
+                message: "Tu pago está tomando más tiempo del esperado. Verifica el estado de tu orden más tarde."
+              });
+            }
+          } else {
+            throw new Error("Failed to verify payment status");
+          }
+        } catch (pollingError) {
+          console.error("Polling error:", pollingError);
+          throw new Error(pollingError.message || "Failed to verify payment status");
+        }
+      } else {
+        // No transaction ID, order created without payment
+        emptyCart();
+        if (onSuccess) {
+          onSuccess(response.order.reference);
+        }
+        handleClose();
       }
-      handleClose();
     } catch (error) {
       console.error("Checkout error:", error);
-      setError(error.message || "Failed to process payment. Please try again.");
+      setAlert({
+        isOpen: true,
+        type: "error",
+        title: "Error en el Proceso",
+        message: error.message || "No se pudo procesar el pago. Por favor, intenta nuevamente."
+      });
     } finally {
       setIsProcessing(false);
+      setProcessingMessage("");
     }
   };
 
@@ -558,11 +648,20 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
               onClick={handleCheckout}
               disabled={isProcessing}
             >
-              {isProcessing ? "Processing Payment..." : "Complete Payment"}
+              {isProcessing ? processingMessage || "Processing Payment..." : "Complete Payment"}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Alert Component */}
+      <Alert
+        isOpen={alert.isOpen}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </div>
   );
 };

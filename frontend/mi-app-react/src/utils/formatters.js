@@ -6,20 +6,20 @@
 /**
  * Formats a number as currency
  * @param {number} amount - The amount to format
- * @param {string} currency - The currency code (default: 'USD')
- * @param {string} locale - The locale for formatting (default: 'en-US')
+ * @param {string} currency - The currency code (default: 'COP')
+ * @param {string} locale - The locale for formatting (default: 'es-CO')
  * @returns {string} Formatted currency string
  */
-export const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
+export const formatCurrency = (amount, currency = 'COP', locale = 'es-CO') => {
   if (typeof amount !== 'number' || isNaN(amount)) {
-    return '$0.00';
+    return '$0';
   }
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 

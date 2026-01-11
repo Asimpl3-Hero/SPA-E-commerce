@@ -32,12 +32,12 @@ end
 
 puts "Created #{categories.size} categories"
 
-# Seed products
+# Seed products (prices in COP - Colombian Pesos)
 products = [
   {
     name: 'Premium Wireless Headphones',
-    price: 299.99,
-    original_price: 349.99,
+    price: 1200000,
+    original_price: 1400000,
     rating: 4.8,
     reviews: 2341,
     category: 'Audio',
@@ -48,7 +48,7 @@ products = [
   },
   {
     name: 'Smart Fitness Watch Pro',
-    price: 399.00,
+    price: 1600000,
     original_price: nil,
     rating: 4.9,
     reviews: 3214,
@@ -60,8 +60,8 @@ products = [
   },
   {
     name: 'Ultra Gaming Mouse RGB',
-    price: 89.99,
-    original_price: 129.99,
+    price: 360000,
+    original_price: 520000,
     rating: 4.7,
     reviews: 1823,
     category: 'Gaming',
@@ -72,7 +72,7 @@ products = [
   },
   {
     name: 'Professional DSLR Camera',
-    price: 1299.00,
+    price: 5200000,
     original_price: nil,
     rating: 4.9,
     reviews: 892,
@@ -84,8 +84,8 @@ products = [
   },
   {
     name: 'Portable SSD 2TB',
-    price: 199.99,
-    original_price: 249.99,
+    price: 800000,
+    original_price: 1000000,
     rating: 4.6,
     reviews: 1456,
     category: 'Storage',
@@ -96,7 +96,7 @@ products = [
   },
   {
     name: 'Mechanical Keyboard RGB',
-    price: 159.99,
+    price: 640000,
     original_price: nil,
     rating: 4.8,
     reviews: 2103,
@@ -108,8 +108,8 @@ products = [
   },
   {
     name: 'Wireless Earbuds Pro',
-    price: 179.99,
-    original_price: 229.99,
+    price: 720000,
+    original_price: 920000,
     rating: 4.7,
     reviews: 3891,
     category: 'Audio',
@@ -120,7 +120,7 @@ products = [
   },
   {
     name: 'Gaming Headset 7.1 Surround',
-    price: 129.99,
+    price: 520000,
     original_price: nil,
     rating: 4.6,
     reviews: 1567,
@@ -132,8 +132,8 @@ products = [
   },
   {
     name: 'Smart Fitness Tracker',
-    price: 79.99,
-    original_price: 99.99,
+    price: 320000,
+    original_price: 400000,
     rating: 4.5,
     reviews: 2456,
     category: 'Wearables',
@@ -144,7 +144,7 @@ products = [
   },
   {
     name: 'Action Camera 4K',
-    price: 349.99,
+    price: 1400000,
     original_price: nil,
     rating: 4.8,
     reviews: 1289,
@@ -156,8 +156,8 @@ products = [
   },
   {
     name: 'Gaming Controller Pro',
-    price: 69.99,
-    original_price: 89.99,
+    price: 280000,
+    original_price: 360000,
     rating: 4.7,
     reviews: 2890,
     category: 'Gaming',
@@ -168,7 +168,7 @@ products = [
   },
   {
     name: 'USB-C Hub 7-in-1',
-    price: 49.99,
+    price: 200000,
     original_price: nil,
     rating: 4.6,
     reviews: 1678,
@@ -180,8 +180,8 @@ products = [
   },
   {
     name: 'External HDD 4TB',
-    price: 119.99,
-    original_price: 149.99,
+    price: 480000,
+    original_price: 600000,
     rating: 4.5,
     reviews: 2134,
     category: 'Storage',
@@ -192,7 +192,7 @@ products = [
   },
   {
     name: 'Studio Monitor Speakers',
-    price: 449.99,
+    price: 1800000,
     original_price: nil,
     rating: 4.9,
     reviews: 892,
@@ -204,7 +204,7 @@ products = [
   },
   {
     name: 'Webcam 1080p HD',
-    price: 89.99,
+    price: 360000,
     original_price: nil,
     rating: 4.6,
     reviews: 1789,
@@ -216,8 +216,8 @@ products = [
   },
   {
     name: 'Smartphone Stand Adjustable',
-    price: 24.99,
-    original_price: 34.99,
+    price: 100000,
+    original_price: 140000,
     rating: 4.7,
     reviews: 3456,
     category: 'Peripherals',
@@ -228,7 +228,7 @@ products = [
   },
   {
     name: 'Wireless Charging Pad 15W',
-    price: 39.99,
+    price: 160000,
     original_price: nil,
     rating: 4.8,
     reviews: 2145,
@@ -240,8 +240,8 @@ products = [
   },
   {
     name: 'Laptop Backpack Water-Resistant',
-    price: 59.99,
-    original_price: 79.99,
+    price: 240000,
+    original_price: 320000,
     rating: 4.9,
     reviews: 4231,
     category: 'Storage',

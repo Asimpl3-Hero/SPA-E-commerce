@@ -1,0 +1,3 @@
+I, [2026-01-11T12:22:42.043236 #53312]  INFO -- : (0.001915s) SET standard_conforming_strings = ON
+I, [2026-01-11T12:22:42.044591 #53312]  INFO -- : (0.001067s) SET client_min_messages = 'WARNING'
+I, [2026-01-11T12:22:42.045536 #53312]  INFO -- : (0.000791s) SET DateStyle = 'ISO'

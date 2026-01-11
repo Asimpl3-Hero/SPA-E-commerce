@@ -490,6 +490,120 @@ module Infrastructure
           end
         end
 
+        # GET /api/checkout/transaction-status/:transaction_id
+        # Poll transaction status from Wompi with retries
+        get '/api/checkout/transaction-status/:transaction_id' do
+          content_type :json
+
+          transaction_id = params[:transaction_id]
+          max_attempts = 5
+          delay_seconds = 3
+          final_statuses = ['APPROVED', 'DECLINED', 'ERROR', 'VOIDED']
+
+          begin
+            max_attempts.times do |attempt|
+              # Get transaction status from Wompi
+              result = Payment::WompiService.get_transaction(transaction_id)
+
+              if result[:success]
+                wompi_data = result[:data][:data]
+                current_status = wompi_data[:status]
+
+                # Update our database with the latest status
+                DB.transaction do
+                  transaction_record = DB[:transactions]
+                    .where(wompi_transaction_id: transaction_id)
+                    .first
+
+                  if transaction_record
+                    # Update transaction
+                    DB[:transactions].where(id: transaction_record[:id]).update(
+                      status: current_status,
+                      payment_data: Oj.dump(wompi_data),
+                      updated_at: Time.now
+                    )
+
+                    # Update order
+                    order_status = map_wompi_status(current_status)
+                    order = DB[:orders].where(transaction_id: transaction_record[:id]).first
+
+                    if order
+                      DB[:orders].where(id: order[:id]).update(
+                        status: order_status,
+                        updated_at: Time.now
+                      )
+
+                      # Update stock if approved
+                      if current_status == 'APPROVED' && transaction_record[:status] != 'APPROVED'
+                        items = Oj.load(order[:items], symbol_keys: true)
+                        update_product_stock(items, :decrement)
+
+                        # Update delivery
+                        if order[:delivery_id]
+                          DB[:deliveries].where(id: order[:delivery_id]).update(
+                            status: 'assigned',
+                            estimated_delivery_date: Time.now + (3 * 24 * 60 * 60),
+                            updated_at: Time.now
+                          )
+                        end
+                      end
+                    end
+                  end
+                end
+
+                # If status is final, return immediately
+                if final_statuses.include?(current_status)
+                  status 200
+                  return Oj.dump({
+                    success: true,
+                    transaction: {
+                      id: wompi_data[:id],
+                      status: current_status,
+                      reference: wompi_data[:reference],
+                      amount_in_cents: wompi_data[:amount_in_cents],
+                      currency: wompi_data[:currency],
+                      payment_method_type: wompi_data[:payment_method_type],
+                      status_message: wompi_data[:status_message]
+                    },
+                    attempts: attempt + 1
+                  }, mode: :compat)
+                end
+
+                # Status is still PENDING, wait before next attempt
+                sleep(delay_seconds) unless attempt == max_attempts - 1
+              else
+                # Error getting transaction
+                status 500
+                return Oj.dump({
+                  success: false,
+                  error: result[:error],
+                  attempts: attempt + 1
+                }, mode: :compat)
+              end
+            end
+
+            # Max attempts reached and status still PENDING
+            status 200
+            Oj.dump({
+              success: true,
+              transaction: {
+                status: 'PENDING',
+                message: 'Transaction is still being processed'
+              },
+              attempts: max_attempts
+            }, mode: :compat)
+          rescue => e
+            puts "Error in transaction-status polling: #{e.message}"
+            puts e.backtrace.join("\n")
+            status 500
+            Oj.dump({
+              success: false,
+              error: 'Failed to check transaction status',
+              message: e.message
+            }, mode: :compat)
+          end
+        end
+
         # GET /api/checkout/acceptance-token
         # Get Wompi acceptance token
         get '/api/checkout/acceptance-token' do
