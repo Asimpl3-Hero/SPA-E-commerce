@@ -4,23 +4,21 @@
  */
 
 /**
- * Formats a number as currency
+ * Formats a number as currency in COP format
  * @param {number} amount - The amount to format
- * @param {string} currency - The currency code (default: 'COP')
- * @param {string} locale - The locale for formatting (default: 'es-CO')
- * @returns {string} Formatted currency string
+ * @returns {string} Formatted currency string (e.g., $1.200.000)
  */
-export const formatCurrency = (amount, currency = 'COP', locale = 'es-CO') => {
+export const formatCurrency = (amount) => {
   if (typeof amount !== 'number' || isNaN(amount)) {
     return '$0';
   }
 
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  // Format number with dots as thousand separators for COP
+  const formatted = Math.floor(amount)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+  return `$${formatted}`;
 };
 
 /**

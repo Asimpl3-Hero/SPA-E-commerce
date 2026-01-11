@@ -3,7 +3,7 @@ module Domain
     class Product
       attr_reader :id, :name, :price, :original_price, :rating, :reviews,
                   :category, :description, :image, :badge_text, :badge_variant,
-                  :created_at, :updated_at
+                  :stock, :created_at, :updated_at
 
       def initialize(
         id:,
@@ -17,6 +17,7 @@ module Domain
         reviews: 0,
         badge_text: nil,
         badge_variant: nil,
+        stock: 0,
         created_at: nil,
         updated_at: nil
       )
@@ -31,6 +32,7 @@ module Domain
         @image = image
         @badge_text = badge_text
         @badge_variant = badge_variant
+        @stock = stock
         @created_at = created_at
         @updated_at = updated_at
       end
@@ -46,8 +48,17 @@ module Domain
           'category' => @category,
           'description' => @description,
           'image' => @image,
+          'stock' => @stock,
           'badge' => badge_present? ? { 'text' => @badge_text, 'variant' => @badge_variant } : nil
         }.compact
+      end
+
+      def in_stock?
+        @stock > 0
+      end
+
+      def low_stock?
+        @stock > 0 && @stock <= 10
       end
 
       def has_discount?

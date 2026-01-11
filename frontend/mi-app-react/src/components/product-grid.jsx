@@ -49,6 +49,7 @@ export function ProductGrid({ searchQuery }) {
           badge: product.badge || null,
           image: product.image || "/placeholder.svg",
           description: product.description || "",
+          stock: product.stock || 0,
         }));
 
         setProducts(transformedProducts);

@@ -1,10 +1,13 @@
-/* Main Stylesheet */
+/* Main Stylesheet - TechVault Premium E-commerce */
 
 /* Design System Variables */
 @import './variables.css';
 
 /* Base Styles */
 @import './base.css';
+
+/* Brand Identity & Visual Elements */
+@import './brand-identity.css';
 
 /* Component Utilities */
 @import './components.css';

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { CheckoutModal } from "@/components/checkout-modal";
+import { formatCurrency } from "@/utils/formatters";
 import "@/styles/components/cart-drawer.css";
 
 export function CartDrawer() {
@@ -16,6 +17,7 @@ export function CartDrawer() {
     removeFromCart,
     emptyCart,
     closeCart,
+    getCartSummary,
   } = useCart();
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -52,6 +54,8 @@ export function CartDrawer() {
   };
 
   if (!isOpen) return null;
+
+  const summary = getCartSummary();
 
   return (
     <>
@@ -109,7 +113,7 @@ export function CartDrawer() {
                     {/* Item Details */}
                     <div className="cart-item-details">
                       <h3 className="cart-item-name">{item.name}</h3>
-                      <p className="cart-item-price">${item.price}</p>
+                      <p className="cart-item-price">{formatCurrency(item.price)}</p>
 
                       {/* Quantity Controls */}
                       <div className="cart-item-actions">
@@ -158,21 +162,27 @@ export function CartDrawer() {
               <div className="cart-drawer-subtotal">
                 <span className="cart-drawer-subtotal-label">Subtotal</span>
                 <span className="cart-drawer-subtotal-value">
-                  ${totalPrice.toFixed(2)}
+                  {formatCurrency(summary.subtotal)}
                 </span>
+              </div>
+
+              {/* IVA */}
+              <div className="cart-drawer-shipping">
+                <span>IVA (19%)</span>
+                <span>{formatCurrency(summary.iva)}</span>
               </div>
 
               {/* Shipping */}
               <div className="cart-drawer-shipping">
                 <span>Shipping</span>
-                <span>{totalPrice >= 99 ? "Free" : "$9.99"}</span>
+                <span>{summary.shipping === 0 ? "Free" : formatCurrency(summary.shipping)}</span>
               </div>
 
               {/* Total */}
               <div className="cart-drawer-total">
                 <span>Total</span>
                 <span>
-                  ${(totalPrice + (totalPrice >= 99 ? 0 : 9.99)).toFixed(2)}
+                  {formatCurrency(summary.total)}
                 </span>
               </div>
 

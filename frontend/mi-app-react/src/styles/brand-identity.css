@@ -1,0 +1,261 @@
+/* Brand Identity - TechVault Visual Elements */
+
+/* Gradientes de marca únicos */
+.brand-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--muted-foreground)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-gradient-subtle {
+  background: linear-gradient(to bottom, hsl(var(--background)), hsl(var(--secondary) / 0.3));
+}
+
+/* Efectos de brillo dorado */
+.brand-glow {
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
+              0 0 40px hsl(var(--primary) / 0.2),
+              0 0 60px hsl(var(--primary) / 0.1);
+}
+
+.brand-glow-hover {
+  transition: all var(--transition-base);
+}
+
+.brand-glow-hover:hover {
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.4),
+              0 0 60px hsl(var(--primary) / 0.3),
+              0 0 90px hsl(var(--primary) / 0.2);
+}
+
+/* Patrón de puntos de marca */
+.brand-pattern-dots {
+  position: relative;
+}
+
+.brand-pattern-dots::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Patrón de líneas diagonales */
+.brand-pattern-lines {
+  position: relative;
+}
+
+.brand-pattern-lines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    hsl(var(--foreground)) 10px,
+    hsl(var(--foreground)) 11px
+  );
+  pointer-events: none;
+}
+
+/* Borde gradiente animado */
+.brand-border-gradient {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.brand-border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  padding: 2px;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Efecto shimmer/brillo deslizante */
+.brand-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Efecto de elevación premium */
+.brand-elevation-sm {
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.brand-elevation-sm:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.brand-elevation-md {
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.brand-elevation-md:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+}
+
+.brand-elevation-lg {
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+}
+
+.brand-elevation-lg:hover {
+  box-shadow: var(--shadow-2xl);
+  transform: translateY(-6px);
+}
+
+/* Texto con efecto metálico dorado */
+.brand-text-metallic {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--accent)) 50%,
+    hsl(var(--primary)) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: metallicShine 3s linear infinite;
+}
+
+@keyframes metallicShine {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Efecto glassmorphism reutilizable */
+.brand-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .brand-glass {
+  background: rgba(18, 18, 18, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Separador decorativo de marca */
+.brand-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    hsl(var(--border)),
+    transparent
+  );
+  margin: var(--space-12) 0;
+}
+
+.brand-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px hsl(var(--background)),
+              0 0 20px hsl(var(--primary) / 0.3);
+}
+
+/* Animación de pulsación dorada */
+.brand-pulse {
+  animation: brandPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes brandPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+}
+
+/* Badge premium de marca */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 9999px;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1));
+  border: 1px solid hsl(var(--primary) / 0.2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: hsl(var(--primary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-base);
+}
+
+.brand-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
+}
+
+/* Efecto de foco premium */
+.brand-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px hsl(var(--background)),
+              0 0 0 5px hsl(var(--ring)),
+              0 0 20px hsl(var(--ring) / 0.3);
+}

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useDispatch } from "react-redux";
 import { addItem, setCartOpen } from "@/store/cartSlice";
+import { formatCurrency } from "@/utils/formatters";
 import "@/styles/components/product-card.css";
 
 export function ProductCard({ product, onOpenModal }) {
@@ -60,10 +61,10 @@ export function ProductCard({ product, onOpenModal }) {
         {/* Footer: Price & Add to Cart */}
         <div className="product-card-footer">
           <div className="product-card-prices">
-            <span className="product-card-price">${product.price}</span>
+            <span className="product-card-price">{formatCurrency(product.price)}</span>
             {product.originalPrice && (
               <span className="product-card-original-price">
-                ${product.originalPrice}
+                {formatCurrency(product.originalPrice)}
               </span>
             )}
           </div>

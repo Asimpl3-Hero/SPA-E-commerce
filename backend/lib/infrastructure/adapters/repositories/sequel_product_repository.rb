@@ -94,6 +94,7 @@ module Infrastructure
             image: row[:image],
             badge_text: row[:badge_text],
             badge_variant: row[:badge_variant],
+            stock: row[:stock] || 0,
             created_at: row[:created_at],
             updated_at: row[:updated_at]
           )

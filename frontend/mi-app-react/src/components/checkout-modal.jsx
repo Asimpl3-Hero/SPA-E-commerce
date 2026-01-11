@@ -378,8 +378,8 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess }) => {
                 </span>
               </div>
               <div className="checkout-summary-row">
-                <span>Tax</span>
-                <span>{formatCurrency(summary.tax)}</span>
+                <span>IVA (19%)</span>
+                <span>{formatCurrency(summary.iva)}</span>
               </div>
               <div className="checkout-summary-row checkout-summary-total">
                 <span>Total</span>
