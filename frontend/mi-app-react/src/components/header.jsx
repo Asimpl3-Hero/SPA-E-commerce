@@ -9,8 +9,9 @@ import "@/styles/components/header.css";
 
 export function Header({ searchQuery, onSearchChange }) {
   const { totalItems, toggle: toggleCart } = useCart();
-  const [mobileMenuOpen, toggleMobileMenu, , closeMobileMenu] = useToggle(false);
-  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const [mobileMenuOpen, toggleMobileMenu, , closeMobileMenu] =
+    useToggle(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   // Close mobile menu when switching to desktop view
   useEffect(() => {
@@ -30,13 +31,7 @@ export function Header({ searchQuery, onSearchChange }) {
 
           <nav className="header-nav">
             <a href="#products" className="header-nav-link">
-              Products
-            </a>
-            <a href="#" className="header-nav-link">
-              Deals
-            </a>
-            <a href="#" className="header-nav-link">
-              Support
+              Productos
             </a>
           </nav>
         </div>
@@ -67,9 +62,7 @@ export function Header({ searchQuery, onSearchChange }) {
           >
             <ShoppingCart className="header-icon" />
             {totalItems > 0 && (
-              <span className="header-cart-badge">
-                {totalItems}
-              </span>
+              <span className="header-cart-badge">{totalItems}</span>
             )}
           </Button>
 
