@@ -6,6 +6,7 @@ ruby '~> 3.0'
 gem 'sinatra', '~> 4.0'
 gem 'sinatra-contrib', '~> 4.0'
 gem 'puma', '~> 6.4'
+gem 'rackup', '~> 2.1'
 
 # Database
 gem 'pg', '~> 1.5'

@@ -18,6 +18,41 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ecommerce_network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce_backend
+    environment:
+      - RACK_ENV=production
+      - PORT=4567
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-ecommerce_dev}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - WOMPI_ENV=${WOMPI_ENV:-sandbox}
+      - WOMPI_UAT_URL=${WOMPI_UAT_URL}
+      - WOMPI_SANDBOX_URL=${WOMPI_SANDBOX_URL}
+      - WOMPI_PUBLIC_KEY=${WOMPI_PUBLIC_KEY}
+      - WOMPI_PRIVATE_KEY=${WOMPI_PRIVATE_KEY}
+      - WOMPI_EVENT_KEY=${WOMPI_EVENT_KEY}
+      - WOMPI_INTEGRITY_KEY=${WOMPI_INTEGRITY_KEY}
+    ports:
+      - "4567:4567"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ecommerce_network
+    volumes:
+      - ./db:/app/db
+    restart: unless-stopped
+
+networks:
+  ecommerce_network:
+    driver: bridge
 
 volumes:
   postgres_data:

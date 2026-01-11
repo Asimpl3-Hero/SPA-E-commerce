@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Environment files (will be passed via docker-compose)
+.env
+
+# Logs
+*.log
+logs/
+backend_logs.txt
+puma.log
+backend.log
+
+# Test coverage
+coverage/
+.rspec
+
+# Development tools
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+*.md
+
+# Docker files (not needed inside container)
+Dockerfile
+docker-compose.yml
+.dockerignore
