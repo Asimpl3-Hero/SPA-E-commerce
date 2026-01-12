@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database
@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - ecommerce_network
+      - shared-network
 
   # Backend API
   backend:
@@ -31,7 +31,7 @@ services:
       - RACK_ENV=production
       - PORT=4567
       - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-ecommerce_dev}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - FRONTEND_URL=${FRONTEND_URL:-https://app.tudominio.com}
       - WOMPI_ENV=${WOMPI_ENV:-sandbox}
       - WOMPI_UAT_URL=${WOMPI_UAT_URL}
       - WOMPI_SANDBOX_URL=${WOMPI_SANDBOX_URL}
@@ -45,16 +45,15 @@ services:
       db:
         condition: service_healthy
     networks:
-      - ecommerce_network
+      - shared-network
     volumes:
       - ./db:/app/db
     restart: unless-stopped
 
 networks:
-  ecommerce_network:
-    driver: bridge
+  shared-network:
+    external: true
 
 volumes:
   postgres_data:
     driver: local
-
