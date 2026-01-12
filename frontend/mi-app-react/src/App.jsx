@@ -58,7 +58,11 @@ export default function Home() {
   return (
     <ThemeProvider>
       <div className="min-h-screen flex flex-col">
-        <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        <Header
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onProductClick={handleProductClick}
+        />
         <main className="flex-1">
           <Hero />
           <ProductCarousel products={products} onProductClick={handleProductClick} />

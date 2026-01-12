@@ -117,11 +117,11 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Featured Products')).toBeInTheDocument();
+      expect(screen.getByText('Productos Destacados')).toBeInTheDocument();
     });
 
     expect(
-      screen.getByText('Discover our latest collection of premium electronics')
+      screen.getByText('Descubre nuestra última colección de electrónicos premium')
     ).toBeInTheDocument();
   });
 
@@ -150,11 +150,11 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="headphones" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Search Results')).toBeInTheDocument();
+      expect(screen.getByText('Wireless Noise-Cancelling Headphones')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Found 1 product')).toBeInTheDocument();
-    expect(screen.getByText('Wireless Noise-Cancelling Headphones')).toBeInTheDocument();
+    expect(screen.getByText('Resultados de Búsqueda')).toBeInTheDocument();
+    expect(screen.getByText('1 producto encontrado')).toBeInTheDocument();
     expect(screen.queryByText('Smartwatch Pro Series 8')).not.toBeInTheDocument();
   });
 
@@ -167,10 +167,10 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="gaming" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Search Results')).toBeInTheDocument();
+      expect(screen.getByText('Resultados de Búsqueda')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Found 1 product')).toBeInTheDocument();
+    expect(screen.getByText('1 producto encontrado')).toBeInTheDocument();
     expect(screen.getByText('Wireless Gaming Mouse')).toBeInTheDocument();
   });
 
@@ -193,11 +193,11 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="nonexistent product" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Search Results')).toBeInTheDocument();
+      expect(screen.getByText('No se encontraron productos')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Found 0 products')).toBeInTheDocument();
-    expect(screen.getByText('No products found')).toBeInTheDocument();
+    expect(screen.getByText('Resultados de Búsqueda')).toBeInTheDocument();
+    expect(screen.getByText('0 productos encontrados')).toBeInTheDocument();
   });
 
   test('search is case insensitive', async () => {
@@ -222,7 +222,7 @@ describe('ProductGrid Component', () => {
     const { rerender } = renderWithStore(<ProductGrid searchQuery="headphones" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Found 1 product')).toBeInTheDocument();
+      expect(screen.getByText('1 producto encontrado')).toBeInTheDocument();
     });
 
     const wirelessProducts = mockProducts.filter(p =>
@@ -237,7 +237,7 @@ describe('ProductGrid Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Found 2 products')).toBeInTheDocument();
+      expect(screen.getByText('2 productos encontrados')).toBeInTheDocument();
     });
   });
 
@@ -297,7 +297,7 @@ describe('ProductGrid Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Found 1 product')).toBeInTheDocument();
+      expect(screen.getByText('1 producto encontrado')).toBeInTheDocument();
     });
 
     expect(screen.getByText('Wireless Noise-Cancelling Headphones')).toBeInTheDocument();
@@ -311,7 +311,7 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="" />);
 
     // Should show loading spinner initially
-    expect(screen.getByText('Featured Products')).toBeInTheDocument();
+    expect(screen.getByText('Productos Destacados')).toBeInTheDocument();
   });
 
   test('displays error state when API call fails', async () => {
@@ -320,7 +320,7 @@ describe('ProductGrid Component', () => {
     renderWithStore(<ProductGrid searchQuery="" />);
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading products')).toBeInTheDocument();
+      expect(screen.getByText('Error al cargar productos')).toBeInTheDocument();
     });
 
     expect(screen.getByText('Failed to fetch products')).toBeInTheDocument();

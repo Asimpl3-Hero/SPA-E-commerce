@@ -4,6 +4,11 @@ import "@/styles/components/success-modal.css";
 /**
  * Success Modal Component
  * CTA modal shown after successful payment
+ * @param {boolean} isOpen - Controls modal visibility
+ * @param {function} onClose - Callback to close modal
+ * @param {string} orderReference - Order reference number
+ * @param {function} onViewInvoice - Callback to view invoice (opens InvoiceModal)
+ * @param {function} onContinueShopping - Callback to continue shopping
  */
 export const SuccessModal = ({
   isOpen,
@@ -39,10 +44,15 @@ export const SuccessModal = ({
   };
 
   const handleViewInvoice = () => {
-    // Call callback first before closing
-    if (onViewInvoice) onViewInvoice();
-    // Then close this modal
-    handleClose();
+    console.log("📄 View Invoice clicked in SuccessModal");
+    console.log("📄 onViewInvoice callback exists:", !!onViewInvoice);
+
+    // Call the callback immediately
+    if (onViewInvoice) {
+      onViewInvoice();
+    } else {
+      console.warn("⚠️ onViewInvoice callback not provided");
+    }
   };
 
   const handleContinueShopping = () => {
@@ -104,6 +114,7 @@ export const SuccessModal = ({
           <button
             className="success-modal-btn success-modal-btn-secondary"
             onClick={handleViewInvoice}
+            aria-label="Ver factura de compra"
           >
             <svg
               width="20"
@@ -125,6 +136,7 @@ export const SuccessModal = ({
           <button
             className="success-modal-btn success-modal-btn-primary"
             onClick={handleContinueShopping}
+            aria-label="Continuar comprando"
           >
             <svg
               width="20"

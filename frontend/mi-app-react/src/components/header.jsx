@@ -1,14 +1,14 @@
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { SearchWithSuggestions } from "@/components/search-with-suggestions";
 import { useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useToggle } from "@/hooks/useToggle";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import "@/styles/components/header.css";
 
-export function Header({ searchQuery, onSearchChange }) {
+export function Header({ searchQuery, onSearchChange, onProductClick }) {
   const { totalItems, toggle: toggleCart } = useCart();
   const [mobileMenuOpen, toggleMobileMenu, , closeMobileMenu] =
     useToggle(false);
@@ -35,16 +35,11 @@ export function Header({ searchQuery, onSearchChange }) {
 
         {/* Search Bar (Desktop) */}
         <div className="header-search">
-          <div className="header-search-wrapper">
-            <Search className="header-search-icon" />
-            <Input
-              type="search"
-              placeholder="Buscar productos..."
-              className="header-search-input input-base"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
+          <SearchWithSuggestions
+            searchQuery={searchQuery}
+            onSearchChange={onSearchChange}
+            onProductClick={onProductClick}
+          />
         </div>
 
         {/* Actions */}
@@ -88,13 +83,10 @@ export function Header({ searchQuery, onSearchChange }) {
         <div className="header-mobile-menu">
           {/* Mobile Search */}
           <div className="header-mobile-search">
-            <Search className="header-search-icon" />
-            <Input
-              type="search"
-              placeholder="Buscar productos..."
-              className="header-search-input input-base"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
+            <SearchWithSuggestions
+              searchQuery={searchQuery}
+              onSearchChange={onSearchChange}
+              onProductClick={onProductClick}
             />
           </div>
 

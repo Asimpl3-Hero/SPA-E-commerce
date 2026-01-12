@@ -23,13 +23,16 @@ export const InvoiceModal = ({
       // Lock body scroll
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      // Only unset scroll when closing, not on mount
+      if (isVisible) {
+        document.body.style.overflow = "unset";
+      }
     }
 
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, isVisible]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -48,8 +51,9 @@ export const InvoiceModal = ({
     console.log("Download invoice as PDF");
   };
 
-  if (!isVisible || !invoiceData) {
-    console.log('❌ InvoiceModal early return:', { isVisible, invoiceData });
+  // Don't render if not open or no data
+  if (!isOpen || !invoiceData) {
+    console.log('❌ InvoiceModal early return:', { isOpen, invoiceData });
     return null;
   }
 
@@ -66,11 +70,11 @@ export const InvoiceModal = ({
 
   return (
     <div
-      className={`invoice-modal-overlay ${isClosing ? "closing" : ""}`}
+      className={`invoice-modal-overlay ${isClosing ? "closing" : ""} ${isVisible ? "visible" : ""}`}
       onClick={handleClose}
     >
       <div
-        className={`invoice-modal ${isClosing ? "closing" : ""}`}
+        className={`invoice-modal ${isClosing ? "closing" : ""} ${isVisible ? "visible" : ""}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

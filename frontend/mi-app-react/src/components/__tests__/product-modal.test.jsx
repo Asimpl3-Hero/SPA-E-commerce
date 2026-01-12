@@ -67,7 +67,7 @@ describe('ProductModal Component', () => {
     expect(screen.getByText('Electronics')).toBeInTheDocument();
     expect(screen.getByText('This is a detailed test product description')).toBeInTheDocument();
     expect(screen.getByText('4.5')).toBeInTheDocument();
-    expect(screen.getByText('(100 reviews)')).toBeInTheDocument();
+    expect(screen.getByText('(100 reseñas)')).toBeInTheDocument();
   });
 
   test('displays badge when provided', () => {

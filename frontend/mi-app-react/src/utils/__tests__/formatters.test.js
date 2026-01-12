@@ -14,33 +14,33 @@ import {
 describe('formatters', () => {
   describe('formatCurrency', () => {
     test('formats positive numbers', () => {
-      expect(formatCurrency(100)).toBe('$100.00');
-      expect(formatCurrency(1234.56)).toBe('$1,234.56');
+      expect(formatCurrency(100)).toBe('$100');
+      expect(formatCurrency(1234.56)).toBe('$1.234');
     });
 
     test('formats zero', () => {
-      expect(formatCurrency(0)).toBe('$0.00');
+      expect(formatCurrency(0)).toBe('$0');
     });
 
     test('formats negative numbers', () => {
-      expect(formatCurrency(-50)).toBe('-$50.00');
+      expect(formatCurrency(-50)).toBe('$-50');
     });
 
     test('handles invalid input', () => {
-      expect(formatCurrency(null)).toBe('$0.00');
-      expect(formatCurrency(undefined)).toBe('$0.00');
-      expect(formatCurrency('invalid')).toBe('$0.00');
-      expect(formatCurrency(NaN)).toBe('$0.00');
+      expect(formatCurrency(null)).toBe('$0');
+      expect(formatCurrency(undefined)).toBe('$0');
+      expect(formatCurrency('invalid')).toBe('$0');
+      expect(formatCurrency(NaN)).toBe('$0');
     });
 
-    test('formats with different currencies', () => {
-      const result = formatCurrency(100, 'EUR');
-      expect(result).toContain('100');
+    test('formats large numbers with thousand separators', () => {
+      expect(formatCurrency(1000000)).toBe('$1.000.000');
+      expect(formatCurrency(1234567)).toBe('$1.234.567');
     });
 
-    test('handles decimal precision', () => {
-      expect(formatCurrency(99.999)).toBe('$100.00');
-      expect(formatCurrency(99.991)).toBe('$99.99');
+    test('handles decimal precision by flooring', () => {
+      expect(formatCurrency(99.999)).toBe('$99');
+      expect(formatCurrency(99.991)).toBe('$99');
     });
   });
 

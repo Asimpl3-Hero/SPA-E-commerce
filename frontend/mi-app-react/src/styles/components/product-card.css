@@ -51,10 +51,10 @@
 
 /* Overlay gradient que aparece en hover */
 .product-card-image-wrapper::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
   opacity: 0;
   transition: opacity var(--transition-base);
   pointer-events: none;
@@ -164,15 +164,26 @@
 
 /* Add to Cart Button - Sin animaciones, simple y funcional */
 .product-card-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: var(--space-2) !important;
-  white-space: nowrap !important;
-  font-weight: 500 !important;
-  padding: var(--space-2) var(--space-4) !important;
-  min-width: auto !important;
-  overflow: visible !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+  white-space: nowrap;
+}
+.product-card-button:hover {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
 }
 
 /* Remover pseudo-elementos del botón base */
@@ -216,11 +227,27 @@
 }
 
 /* Retraso escalonado para múltiples cards */
-.product-card:nth-child(1) { animation-delay: 0s; }
-.product-card:nth-child(2) { animation-delay: 0.1s; }
-.product-card:nth-child(3) { animation-delay: 0.2s; }
-.product-card:nth-child(4) { animation-delay: 0.3s; }
-.product-card:nth-child(5) { animation-delay: 0.4s; }
-.product-card:nth-child(6) { animation-delay: 0.5s; }
-.product-card:nth-child(7) { animation-delay: 0.6s; }
-.product-card:nth-child(8) { animation-delay: 0.7s; }
+.product-card:nth-child(1) {
+  animation-delay: 0s;
+}
+.product-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.product-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.product-card:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.product-card:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.product-card:nth-child(6) {
+  animation-delay: 0.5s;
+}
+.product-card:nth-child(7) {
+  animation-delay: 0.6s;
+}
+.product-card:nth-child(8) {
+  animation-delay: 0.7s;
+}

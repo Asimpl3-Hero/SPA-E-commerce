@@ -1,3 +1,6 @@
+// Mock wompi config to avoid import.meta.env issues
+jest.mock('@/config/wompi');
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';

@@ -36,7 +36,7 @@ class App < Sinatra::Base
     get_all_products: Application::UseCases::GetAllProducts.new(product_repository),
     get_product_by_id: Application::UseCases::GetProductById.new(product_repository),
     search_products: Application::UseCases::SearchProducts.new(product_repository),
-    get_all_categories: Application::UseCases::GetAllCategories.new(product_repository),
+    get_all_categories: Application::UseCases::GetAllCategories.new(category_repository),
     create_product: Application::UseCases::CreateProduct.new(product_repository)
   }
 

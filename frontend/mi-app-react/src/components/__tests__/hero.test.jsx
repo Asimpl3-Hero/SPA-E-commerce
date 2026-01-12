@@ -10,91 +10,50 @@ describe('Hero Component', () => {
 
   test('renders new arrivals badge', () => {
     render(<Hero />);
-    expect(screen.getByText('New Arrivals 2025')).toBeInTheDocument();
+    expect(screen.getByText('Edición 2026')).toBeInTheDocument();
   });
 
   test('renders hero title', () => {
     render(<Hero />);
-    expect(screen.getByText('Discover the Future of Tech')).toBeInTheDocument();
+    expect(screen.getByText('El siguiente nivel en innovación')).toBeInTheDocument();
   });
 
   test('renders hero title as h1', () => {
     render(<Hero />);
-    const title = screen.getByText('Discover the Future of Tech');
+    const title = screen.getByText('El siguiente nivel en innovación');
     expect(title.tagName).toBe('H1');
   });
 
   test('renders hero description', () => {
     render(<Hero />);
     expect(
-      screen.getByText(/Premium electronics and gadgets curated for those who demand the best/i)
+      screen.getByText(/Dispositivos diseñados para el presente, creados para el futuro/i)
     ).toBeInTheDocument();
   });
 
-  test('mentions free shipping in description', () => {
+  test('mentions technology adaptation in description', () => {
     render(<Hero />);
-    expect(screen.getByText(/Free shipping on orders over \$99/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tecnología que se adapta a tu estilo de vida/i)).toBeInTheDocument();
   });
 
-  test('renders Shop Now button', () => {
+  test('renders Compra ahora button', () => {
     render(<Hero />);
-    const shopButton = screen.getByRole('link', { name: /shop now/i });
+    const shopButton = screen.getByRole('button', { name: /compra ahora/i });
     expect(shopButton).toBeInTheDocument();
   });
 
-  test('Shop Now button links to products section', () => {
+  test('renders Acerca de button', () => {
     render(<Hero />);
-    const shopButton = screen.getByRole('link', { name: /shop now/i });
-    expect(shopButton).toHaveAttribute('href', '#products');
-  });
-
-  test('renders View Deals button', () => {
-    render(<Hero />);
-    expect(screen.getByRole('button', { name: /view deals/i })).toBeInTheDocument();
-  });
-
-  test('renders hero image', () => {
-    render(<Hero />);
-    const image = screen.getByAltText('Featured tech products');
-    expect(image).toBeInTheDocument();
-  });
-
-  test('hero image has correct src', () => {
-    render(<Hero />);
-    const image = screen.getByAltText('Featured tech products');
-    expect(image).toHaveAttribute('src', '/premium-tech-gadgets-collection-headphones-smartwa.jpg');
-  });
-
-  test('renders ArrowRight icon in Shop Now button', () => {
-    render(<Hero />);
-    const shopButton = screen.getByRole('link', { name: /shop now/i });
-    expect(shopButton.querySelector('svg')).toBeInTheDocument();
+    const aboutButton = screen.getByRole('button', { name: /acerca de/i });
+    expect(aboutButton).toBeInTheDocument();
   });
 
   test('both buttons are rendered', () => {
     render(<Hero />);
-    const shopLink = screen.getByRole('link', { name: /shop now/i });
-    const dealsButton = screen.getByRole('button', { name: /view deals/i });
-    expect(shopLink).toBeInTheDocument();
-    expect(dealsButton).toBeInTheDocument();
-  });
-
-  test('Shop Now link is rendered as a link element', () => {
-    render(<Hero />);
-    const shopButton = screen.getByRole('link', { name: /shop now/i });
-    expect(shopButton.tagName).toBe('A');
-  });
-
-  test('View Deals button has large size', () => {
-    render(<Hero />);
-    const dealsButton = screen.getByRole('button', { name: /view deals/i });
-    expect(dealsButton).toHaveClass('btn-size-lg');
-  });
-
-  test('View Deals button has outline variant', () => {
-    render(<Hero />);
-    const dealsButton = screen.getByRole('button', { name: /view deals/i });
-    expect(dealsButton).toHaveClass('btn-outline');
+    const shopButton = screen.getByRole('button', { name: /compra ahora/i });
+    const aboutButton = screen.getByRole('button', { name: /acerca de/i });
+    expect(shopButton).toBeInTheDocument();
+    expect(aboutButton).toBeInTheDocument();
   });
 
   test('renders badge wrapper with correct class', () => {

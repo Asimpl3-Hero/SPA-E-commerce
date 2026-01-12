@@ -128,20 +128,26 @@ export function CartDrawer() {
   };
 
   const handleViewInvoice = () => {
-    console.log('👁️ handleViewInvoice called');
+    console.log('👁️ handleViewInvoice called from CartDrawer');
     console.log('📦 lastPurchaseData:', lastPurchaseData);
     console.log('🔍 invoiceModal state before:', invoiceModal);
 
-    // Close success modal
+    if (!lastPurchaseData) {
+      console.error('❌ No purchase data available!');
+      return;
+    }
+
+    // Close success modal first
     setSuccessModal({ isOpen: false, orderReference: "" });
 
-    // Open invoice modal with saved data
-    setInvoiceModal({
-      isOpen: true,
-      data: lastPurchaseData,
-    });
-
-    console.log('✅ Invoice modal should now open');
+    // Use a small delay to ensure success modal closes before opening invoice
+    setTimeout(() => {
+      console.log('🚀 Opening invoice modal with data:', lastPurchaseData);
+      setInvoiceModal({
+        isOpen: true,
+        data: lastPurchaseData,
+      });
+    }, 200);
   };
 
   const handleContinueShopping = () => {

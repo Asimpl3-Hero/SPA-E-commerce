@@ -5,16 +5,17 @@ module Application
     class GetAllCategories
       include Dry::Monads[:result]
 
-      def initialize(product_repository)
-        @product_repository = product_repository
+      def initialize(category_repository)
+        @category_repository = category_repository
       end
 
       def call
-        # Railway: Get all products and extract unique categories
-        products = @product_repository.find_all
-        categories = products.map(&:category).uniq.sort
+        # Railway: Get all categories from the database
+        categories = @category_repository.find_all
+        # Convert entities to hash representation
+        category_hashes = categories.map(&:to_h)
 
-        Success(categories)
+        Success(category_hashes)
       rescue StandardError => e
         # Railway: Error handling
         Failure({ type: :server_error, message: e.message })

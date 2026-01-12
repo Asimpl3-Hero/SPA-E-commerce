@@ -156,6 +156,7 @@
   width: 100%;
   padding-top: var(--space-4);
   border-top: 1px solid hsl(var(--border));
+  position: relative;
 }
 
 .success-modal-btn {

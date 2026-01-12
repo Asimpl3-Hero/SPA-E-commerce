@@ -212,11 +212,11 @@ describe('useCart', () => {
     expect(result.current.isInCart(999)).toBe(false);
   });
 
-  test('calculates cart summary', () => {
+  test('calculates cart summary with free shipping', () => {
     const store = createMockStore({
       items: [
-        { id: 1, name: 'Product 1', price: 100, quantity: 2 },
-        { id: 2, name: 'Product 2', price: 50, quantity: 1 },
+        { id: 1, name: 'Product 1', price: 30000, quantity: 2 },
+        { id: 2, name: 'Product 2', price: 10000, quantity: 1 },
       ],
     });
     const { result } = renderHook(() => useCart(), {
@@ -225,10 +225,10 @@ describe('useCart', () => {
 
     const summary = result.current.getCartSummary();
 
-    expect(summary.subtotal).toBe(250);
-    expect(summary.shipping).toBe(0); // Free shipping over $250
-    expect(summary.tax).toBeCloseTo(25, 2);
-    expect(summary.total).toBeCloseTo(275, 2);
+    expect(summary.subtotal).toBe(70000);
+    expect(summary.shipping).toBe(0); // Free shipping over 50000
+    expect(summary.iva).toBeCloseTo(13300, 2);
+    expect(summary.total).toBeCloseTo(83300, 2);
     expect(summary.itemCount).toBe(3);
     expect(summary.freeShipping).toBe(true);
     expect(summary.amountUntilFreeShipping).toBe(0);
@@ -236,7 +236,7 @@ describe('useCart', () => {
 
   test('calculates shipping cost when below threshold', () => {
     const store = createMockStore({
-      items: [{ id: 1, name: 'Product 1', price: 100, quantity: 1 }],
+      items: [{ id: 1, name: 'Product 1', price: 20000, quantity: 1 }],
     });
     const { result } = renderHook(() => useCart(), {
       wrapper: wrapper(store),
@@ -244,24 +244,40 @@ describe('useCart', () => {
 
     const summary = result.current.getCartSummary();
 
-    expect(summary.subtotal).toBe(100);
-    expect(summary.shipping).toBe(10);
+    expect(summary.subtotal).toBe(20000);
+    expect(summary.shipping).toBe(10000);
     expect(summary.freeShipping).toBe(false);
-    expect(summary.amountUntilFreeShipping).toBe(150);
+    expect(summary.amountUntilFreeShipping).toBe(30000);
   });
 
   test('calculates total price correctly', () => {
     const store = createMockStore({
       items: [
-        { id: 1, name: 'Product 1', price: 50, quantity: 2 },
-        { id: 2, name: 'Product 2', price: 75, quantity: 3 },
+        { id: 1, name: 'Product 1', price: 15000, quantity: 2 },
+        { id: 2, name: 'Product 2', price: 25000, quantity: 3 },
       ],
     });
     const { result } = renderHook(() => useCart(), {
       wrapper: wrapper(store),
     });
 
-    expect(result.current.totalPrice).toBe(325);
+    expect(result.current.totalPrice).toBe(105000);
     expect(result.current.totalItems).toBe(5);
+  });
+
+  test('calculates cart summary at exact threshold', () => {
+    const store = createMockStore({
+      items: [{ id: 1, name: 'Product 1', price: 50000, quantity: 1 }],
+    });
+    const { result } = renderHook(() => useCart(), {
+      wrapper: wrapper(store),
+    });
+
+    const summary = result.current.getCartSummary();
+
+    expect(summary.subtotal).toBe(50000);
+    expect(summary.shipping).toBe(0); // Exactly at threshold
+    expect(summary.freeShipping).toBe(true);
+    expect(summary.amountUntilFreeShipping).toBe(0);
   });
 });

@@ -9,51 +9,51 @@ describe('Footer Component', () => {
 
   test('renders brand description', () => {
     render(<Footer />);
-    expect(screen.getByText('Premium electronics for those who demand the best.')).toBeInTheDocument();
+    expect(screen.getByText('Electrónicos premium para quienes exigen lo mejor.')).toBeInTheDocument();
   });
 
   test('renders Shop section title', () => {
     render(<Footer />);
-    expect(screen.getByText('Shop')).toBeInTheDocument();
+    expect(screen.getByText('Tienda')).toBeInTheDocument();
   });
 
   test('renders all Shop links', () => {
     render(<Footer />);
-    expect(screen.getByText('All Products')).toBeInTheDocument();
-    expect(screen.getByText('New Arrivals')).toBeInTheDocument();
-    expect(screen.getByText('Best Sellers')).toBeInTheDocument();
-    expect(screen.getByText('Sale')).toBeInTheDocument();
+    expect(screen.getByText('Todos los Productos')).toBeInTheDocument();
+    expect(screen.getByText('Nuevos Ingresos')).toBeInTheDocument();
+    expect(screen.getByText('Más Vendidos')).toBeInTheDocument();
+    expect(screen.getByText('Ofertas')).toBeInTheDocument();
   });
 
   test('renders Support section title', () => {
     render(<Footer />);
-    expect(screen.getByText('Support')).toBeInTheDocument();
+    expect(screen.getByText('Soporte')).toBeInTheDocument();
   });
 
   test('renders all Support links', () => {
     render(<Footer />);
-    expect(screen.getByText('Contact Us')).toBeInTheDocument();
-    expect(screen.getByText('FAQs')).toBeInTheDocument();
-    expect(screen.getByText('Shipping')).toBeInTheDocument();
-    expect(screen.getByText('Returns')).toBeInTheDocument();
+    expect(screen.getByText('Contáctanos')).toBeInTheDocument();
+    expect(screen.getByText('Preguntas Frecuentes')).toBeInTheDocument();
+    expect(screen.getByText('Envíos')).toBeInTheDocument();
+    expect(screen.getByText('Devoluciones')).toBeInTheDocument();
   });
 
   test('renders Company section title', () => {
     render(<Footer />);
-    expect(screen.getByText('Company')).toBeInTheDocument();
+    expect(screen.getByText('Compañía')).toBeInTheDocument();
   });
 
   test('renders all Company links', () => {
     render(<Footer />);
-    expect(screen.getByText('About')).toBeInTheDocument();
-    expect(screen.getByText('Careers')).toBeInTheDocument();
-    expect(screen.getByText('Press')).toBeInTheDocument();
-    expect(screen.getByText('Privacy')).toBeInTheDocument();
+    expect(screen.getByText('Acerca de')).toBeInTheDocument();
+    expect(screen.getByText('Carreras')).toBeInTheDocument();
+    expect(screen.getByText('Prensa')).toBeInTheDocument();
+    expect(screen.getByText('Privacidad')).toBeInTheDocument();
   });
 
   test('renders copyright text', () => {
     render(<Footer />);
-    expect(screen.getByText(/© 2025 TechVault. All rights reserved./i)).toBeInTheDocument();
+    expect(screen.getByText(/© 2025 TechVault. Todos los derechos reservados./i)).toBeInTheDocument();
   });
 
   test('all links have href attribute', () => {
@@ -72,28 +72,28 @@ describe('Footer Component', () => {
 
   test('renders correct number of navigation sections', () => {
     render(<Footer />);
-    expect(screen.getByText('Shop')).toBeInTheDocument();
-    expect(screen.getByText('Support')).toBeInTheDocument();
-    expect(screen.getByText('Company')).toBeInTheDocument();
+    expect(screen.getByText('Tienda')).toBeInTheDocument();
+    expect(screen.getByText('Soporte')).toBeInTheDocument();
+    expect(screen.getByText('Compañía')).toBeInTheDocument();
   });
 
   test('Shop section has 4 links', () => {
     const { container } = render(<Footer />);
-    const shopSection = screen.getByText('Shop').closest('div');
+    const shopSection = screen.getByText('Tienda').closest('div');
     const links = shopSection.querySelectorAll('a');
     expect(links.length).toBe(4);
   });
 
   test('Support section has 4 links', () => {
     const { container } = render(<Footer />);
-    const supportSection = screen.getByText('Support').closest('div');
+    const supportSection = screen.getByText('Soporte').closest('div');
     const links = supportSection.querySelectorAll('a');
     expect(links.length).toBe(4);
   });
 
   test('Company section has 4 links', () => {
     const { container } = render(<Footer />);
-    const companySection = screen.getByText('Company').closest('div');
+    const companySection = screen.getByText('Compañía').closest('div');
     const links = companySection.querySelectorAll('a');
     expect(links.length).toBe(4);
   });

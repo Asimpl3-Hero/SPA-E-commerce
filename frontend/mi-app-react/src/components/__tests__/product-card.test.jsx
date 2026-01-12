@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { ProductCard } from '../product-card';
@@ -7,8 +7,8 @@ import cartReducer from '@/store/cartSlice';
 const mockProduct = {
   id: 1,
   name: 'Test Product',
-  price: 99,
-  originalPrice: 149,
+  price: 99000,
+  originalPrice: 149000,
   rating: 4.5,
   reviews: 100,
   category: 'Electronics',
@@ -35,8 +35,8 @@ describe('ProductCard Component', () => {
     renderWithStore(<ProductCard product={mockProduct} />);
 
     expect(screen.getByText('Test Product')).toBeInTheDocument();
-    expect(screen.getByText('$99')).toBeInTheDocument();
-    expect(screen.getByText('$149')).toBeInTheDocument();
+    expect(screen.getByText('$99.000')).toBeInTheDocument();
+    expect(screen.getByText('$149.000')).toBeInTheDocument();
     expect(screen.getByText('4.5')).toBeInTheDocument();
     expect(screen.getByText('(100)')).toBeInTheDocument();
     expect(screen.getByText('Electronics')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('ProductCard Component', () => {
   test('renders product without original price', () => {
     const productWithoutOriginalPrice = { ...mockProduct, originalPrice: null };
     renderWithStore(<ProductCard product={productWithoutOriginalPrice} />);
-    expect(screen.queryByText('$149')).not.toBeInTheDocument();
+    expect(screen.queryByText('$149.000')).not.toBeInTheDocument();
   });
 
   test('renders product image with correct alt text', () => {
@@ -94,7 +94,7 @@ describe('ProductCard Component', () => {
       </Provider>
     );
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole('button', { name: /añadir/i });
     fireEvent.click(addButton);
 
     const state = store.getState();
@@ -108,24 +108,55 @@ describe('ProductCard Component', () => {
       <ProductCard product={mockProduct} onOpenModal={handleOpenModal} />
     );
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    const addButton = screen.getByRole('button', { name: /añadir/i });
     fireEvent.click(addButton);
 
     expect(handleOpenModal).not.toHaveBeenCalled();
   });
 
-  test('opens cart drawer when Add button is clicked', () => {
-    const store = createMockStore();
-    render(
-      <Provider store={store}>
-        <ProductCard product={mockProduct} />
-      </Provider>
-    );
+  test('shows "Añadido" feedback after adding to cart', async () => {
+    jest.useFakeTimers();
 
-    const addButton = screen.getByRole('button', { name: /add/i });
+    renderWithStore(<ProductCard product={mockProduct} />);
+
+    const addButton = screen.getByRole('button', { name: /añadir/i });
     fireEvent.click(addButton);
 
-    const state = store.getState();
-    expect(state.cart.isOpen).toBe(true);
+    expect(screen.getByText('Añadido')).toBeInTheDocument();
+
+    jest.advanceTimersByTime(2000);
+
+    await waitFor(() => {
+      expect(screen.getByText('Añadir')).toBeInTheDocument();
+    });
+
+    jest.useRealTimers();
+  });
+
+  test('renders correct button state based on isAdded', () => {
+    renderWithStore(<ProductCard product={mockProduct} />);
+
+    const addButton = screen.getByRole('button', { name: /añadir/i });
+
+    expect(addButton).toHaveTextContent('Añadir');
+
+    fireEvent.click(addButton);
+
+    expect(screen.getByText('Añadido')).toBeInTheDocument();
+  });
+
+  test('handles products with placeholder image', () => {
+    const productWithoutImage = { ...mockProduct, image: null };
+    renderWithStore(<ProductCard product={productWithoutImage} />);
+
+    const image = screen.getByAltText('Test Product');
+    expect(image).toHaveAttribute('src', '/placeholder.svg');
+  });
+
+  test('formats reviews count with locale string', () => {
+    const productWithManyReviews = { ...mockProduct, reviews: 1500 };
+    renderWithStore(<ProductCard product={productWithManyReviews} />);
+
+    expect(screen.getByText('(1,500)')).toBeInTheDocument();
   });
 });

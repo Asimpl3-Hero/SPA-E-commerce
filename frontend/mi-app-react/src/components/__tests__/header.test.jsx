@@ -32,15 +32,15 @@ describe('Header Component', () => {
 
   test('renders desktop navigation links', () => {
     renderWithStore(<Header searchQuery="" onSearchChange={mockOnSearchChange} />);
-    const links = screen.getAllByText('Products');
+    const links = screen.getAllByText('Productos');
     expect(links[0]).toBeInTheDocument();
-    expect(screen.getAllByText('Deals')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('Support')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Ofertas')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Soporte')[0]).toBeInTheDocument();
   });
 
   test('renders search input with placeholder', () => {
     renderWithStore(<Header searchQuery="" onSearchChange={mockOnSearchChange} />);
-    const searchInputs = screen.getAllByPlaceholderText('Search products...');
+    const searchInputs = screen.getAllByPlaceholderText('Buscar productos...');
     expect(searchInputs[0]).toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe('Header Component', () => {
 
   test('calls onSearchChange when typing in search input', () => {
     renderWithStore(<Header searchQuery="" onSearchChange={mockOnSearchChange} />);
-    const searchInput = screen.getAllByPlaceholderText('Search products...')[0];
+    const searchInput = screen.getAllByPlaceholderText('Buscar productos...')[0];
 
     fireEvent.change(searchInput, { target: { value: 'keyboard' } });
 
