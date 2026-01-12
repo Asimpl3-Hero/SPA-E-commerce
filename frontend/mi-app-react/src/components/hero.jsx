@@ -40,7 +40,7 @@ export function Hero() {
           <div className="hero-image-wrapper">
             <div className="hero-image-container">
               <video
-                src="https://cdn.pixabay.com/video/2019/09/06/26619-359604050_large.mp4"
+                src="public/videos/techvault.mp4"
                 className="hero-image"
                 autoPlay
                 loop
