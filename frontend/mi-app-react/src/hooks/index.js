@@ -8,4 +8,4 @@ export * from './useCart';
 export * from './useMediaQuery';
 export * from './useOnClickOutside';
 export * from './useToggle';
-export * from './useCheckout';
+export * from './useUnifiedCheckout';

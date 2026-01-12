@@ -10,32 +10,32 @@ export function Footer() {
           <div className="footer-brand">
             <span className="footer-brand-name">TechVault</span>
             <p className="footer-brand-description">
-              Premium electronics for those who demand the best.
+              Electrónicos premium para quienes exigen lo mejor.
             </p>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h3 className="footer-section-title">Shop</h3>
+            <h3 className="footer-section-title">Tienda</h3>
             <ul className="footer-links">
               <li>
                 <a href="#" className="footer-link">
-                  All Products
+                  Todos los Productos
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  New Arrivals
+                  Nuevos Ingresos
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Best Sellers
+                  Más Vendidos
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Sale
+                  Ofertas
                 </a>
               </li>
             </ul>
@@ -43,26 +43,26 @@ export function Footer() {
 
           {/* Support Links */}
           <div>
-            <h3 className="footer-section-title">Support</h3>
+            <h3 className="footer-section-title">Soporte</h3>
             <ul className="footer-links">
               <li>
                 <a href="#" className="footer-link">
-                  Contact Us
+                  Contáctanos
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  FAQs
+                  Preguntas Frecuentes
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Shipping
+                  Envíos
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Returns
+                  Devoluciones
                 </a>
               </li>
             </ul>
@@ -70,26 +70,26 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="footer-section-title">Company</h3>
+            <h3 className="footer-section-title">Compañía</h3>
             <ul className="footer-links">
               <li>
                 <a href="#" className="footer-link">
-                  About
+                  Acerca de
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Careers
+                  Carreras
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Press
+                  Prensa
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Privacy
+                  Privacidad
                 </a>
               </li>
             </ul>
@@ -99,7 +99,7 @@ export function Footer() {
         {/* Copyright Section */}
         <div className="footer-bottom">
           <p className="footer-copyright">
-            &copy; 2025 TechVault. All rights reserved.
+            &copy; 2025 TechVault. Todos los derechos reservados.
           </p>
         </div>
       </div>

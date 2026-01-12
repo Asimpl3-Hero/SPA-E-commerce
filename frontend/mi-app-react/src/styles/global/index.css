@@ -13,7 +13,7 @@
 @import './components.css';
 
 /* UI Components */
-@import './components/ui/index.css';
+@import '../components/ui/index.css';
 
 /* UX Enhancements */
-@import './components/ux/index.css';
+@import '../components/ux/index.css';

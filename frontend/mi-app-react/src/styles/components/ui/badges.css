@@ -86,19 +86,10 @@
 .badge-new {
   background-image: linear-gradient(to right, #3b82f6, #a855f7);
   color: white;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-color: transparent;
 }
 
 .badge-sale {
   background-image: linear-gradient(to right, #ef4444, #f97316);
   color: white;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
 }

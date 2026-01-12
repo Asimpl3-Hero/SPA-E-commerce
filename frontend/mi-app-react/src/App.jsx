@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Header } from "@/components/header";
 import { Hero } from "@/components/hero";
 import { ProductCarousel } from "@/components/product-carousel";
@@ -55,21 +56,23 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-      <main className="flex-1">
-        <Hero />
-        <ProductCarousel products={products} onProductClick={handleProductClick} />
-        <ProductGrid searchQuery={debouncedSearchQuery} />
-        <AboutSection />
-      </main>
-      <Footer />
-      <CartDrawer />
-      <ProductModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen flex flex-col">
+        <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+        <main className="flex-1">
+          <Hero />
+          <ProductCarousel products={products} onProductClick={handleProductClick} />
+          <ProductGrid searchQuery={debouncedSearchQuery} />
+          <AboutSection />
+        </main>
+        <Footer />
+        <CartDrawer />
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      </div>
+    </ThemeProvider>
   );
 }

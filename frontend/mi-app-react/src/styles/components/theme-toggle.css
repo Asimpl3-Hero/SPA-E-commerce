@@ -1,0 +1,60 @@
+/* Theme Toggle - Modern and Smooth */
+.theme-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.theme-toggle:hover {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Icons */
+.theme-toggle-icon {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light mode - show sun */
+.light .theme-toggle-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.light .theme-toggle-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0);
+}
+
+/* Dark mode - show moon */
+.dark .theme-toggle-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0);
+}
+
+.dark .theme-toggle-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  color: hsl(var(--primary));
+}
+
+/* Sun color in light mode */
+.light .theme-toggle-sun {
+  color: #f59e0b;
+}

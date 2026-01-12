@@ -89,14 +89,14 @@ export function ProductGrid({ searchQuery }) {
           {/* Header Section */}
           <div className="product-grid-header">
             <h2 className="product-grid-title">
-              {searchQuery ? "Search Results" : "Featured Products"}
+              {searchQuery ? "Resultados de Búsqueda" : "Productos Destacados"}
             </h2>
             <p className="product-grid-subtitle">
               {searchQuery
-                ? `Found ${products.length} product${
+                ? `${products.length} producto${
                     products.length !== 1 ? "s" : ""
-                  }`
-                : "Discover our latest collection of premium electronics"}
+                  } encontrado${products.length !== 1 ? "s" : ""}`
+                : "Descubre nuestra última colección de electrónicos premium"}
             </p>
           </div>
 
@@ -108,17 +108,17 @@ export function ProductGrid({ searchQuery }) {
           ) : error ? (
             /* Error State */
             <EmptyState
-              title="Error loading products"
+              title="Error al cargar productos"
               description={error}
             />
           ) : products.length === 0 ? (
             /* Empty State */
             <EmptyState
-              title="No products found"
+              title="No se encontraron productos"
               description={
                 searchQuery
-                  ? `No products found matching "${searchQuery}"`
-                  : "No products available at the moment"
+                  ? `No se encontraron productos que coincidan con "${searchQuery}"`
+                  : "No hay productos disponibles en este momento"
               }
             />
           ) : (
@@ -138,7 +138,7 @@ export function ProductGrid({ searchQuery }) {
               {hasMore && (
                 <div className="product-grid-load-more">
                   <p className="product-grid-load-more-count">
-                    Showing {visibleProducts.length} of {products.length} products
+                    Mostrando {visibleProducts.length} de {products.length} productos
                   </p>
                   <Button
                     size="default"
@@ -146,7 +146,7 @@ export function ProductGrid({ searchQuery }) {
                     onClick={handleLoadMore}
                     className="product-grid-load-more-button"
                   >
-                    Load More Products
+                    Cargar Más Productos
                   </Button>
                 </div>
               )}

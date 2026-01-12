@@ -1,6 +1,7 @@
 import { Search, ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useToggle } from "@/hooks/useToggle";
@@ -38,7 +39,7 @@ export function Header({ searchQuery, onSearchChange }) {
             <Search className="header-search-icon" />
             <Input
               type="search"
-              placeholder="Search products..."
+              placeholder="Buscar productos..."
               className="header-search-input input-base"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -48,6 +49,9 @@ export function Header({ searchQuery, onSearchChange }) {
 
         {/* Actions */}
         <div className="header-actions">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Cart Button */}
           <Button
             variant="ghost"
@@ -87,7 +91,7 @@ export function Header({ searchQuery, onSearchChange }) {
             <Search className="header-search-icon" />
             <Input
               type="search"
-              placeholder="Search products..."
+              placeholder="Buscar productos..."
               className="header-search-input input-base"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -97,13 +101,13 @@ export function Header({ searchQuery, onSearchChange }) {
           {/* Mobile Navigation */}
           <nav className="header-mobile-nav">
             <a href="#products" className="header-mobile-nav-link">
-              Products
+              Productos
             </a>
             <a href="#" className="header-mobile-nav-link">
-              Deals
+              Ofertas
             </a>
             <a href="#" className="header-mobile-nav-link">
-              Support
+              Soporte
             </a>
           </nav>
         </div>

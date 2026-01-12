@@ -216,7 +216,11 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
   padding: var(--space-6);
-  background: linear-gradient(135deg, hsl(var(--secondary) / 0.3), hsl(var(--muted) / 0.2));
+  background: linear-gradient(
+    135deg,
+    hsl(var(--secondary) / 0.3),
+    hsl(var(--muted) / 0.2)
+  );
   border-radius: var(--radius);
   border: 1px solid hsl(var(--border) / 0.5);
   margin-top: var(--space-4);
@@ -273,21 +277,11 @@
 .product-modal-stock-low {
   color: #ea580c;
   background-color: #ffedd5;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .product-modal-stock-out {
   color: #dc2626;
   background-color: #fee2e2;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
 }
 
 /* Price Section */
@@ -392,16 +386,6 @@
   height: 1.25rem;
   width: 1.25rem;
   margin-right: 0.5rem;
-  transition: transform var(--transition-base);
-}
-
-/* Estado de agregado al carrito */
-.product-modal-added {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-}
-
-.product-modal-added .product-modal-cart-icon {
-  animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Animations */

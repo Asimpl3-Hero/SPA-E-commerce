@@ -171,13 +171,13 @@ export function CartDrawer() {
         {/* Header */}
         <div className="cart-drawer-header">
           <h2 id="cart-title" className="cart-drawer-title">
-            Your Cart
+            Tu Carrito
           </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={closeCart}
-            aria-label="Close cart"
+            aria-label="Cerrar carrito"
           >
             <X className="cart-drawer-close-icon" />
           </Button>
@@ -189,9 +189,9 @@ export function CartDrawer() {
             <div className="cart-drawer-empty-icon-wrapper">
               <ShoppingBag className="cart-drawer-empty-icon" />
             </div>
-            <p className="cart-drawer-empty-text">Your cart is empty</p>
+            <p className="cart-drawer-empty-text">Tu carrito está vacío</p>
             <Button onClick={closeCart}>
-              Continue Shopping
+              Continuar Comprando
             </Button>
           </div>
         ) : (
@@ -247,7 +247,7 @@ export function CartDrawer() {
                           className="cart-item-remove"
                           onClick={() => removeFromCart(item.id)}
                         >
-                          Remove
+                          Eliminar
                         </Button>
                       </div>
                     </div>
@@ -274,8 +274,8 @@ export function CartDrawer() {
 
               {/* Shipping */}
               <div className="cart-drawer-shipping">
-                <span>Shipping</span>
-                <span>{summary.shipping === 0 ? "Free" : formatCurrency(summary.shipping)}</span>
+                <span>Envío</span>
+                <span>{summary.shipping === 0 ? "Gratis" : formatCurrency(summary.shipping)}</span>
               </div>
 
               {/* Total */}
@@ -292,7 +292,7 @@ export function CartDrawer() {
                 size="lg"
                 onClick={handleCheckout}
               >
-                Checkout
+                Pagar
               </Button>
 
               <Button
@@ -300,7 +300,7 @@ export function CartDrawer() {
                 className="cart-drawer-clear-btn"
                 onClick={emptyCart}
               >
-                Clear Cart
+                Vaciar Carrito
               </Button>
             </div>
           </>

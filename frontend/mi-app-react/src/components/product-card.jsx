@@ -1,4 +1,4 @@
-import { Star, Plus, Check } from "lucide-react";
+import { Star, ShoppingBag, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,12 +84,12 @@ export function ProductCard({ product, onOpenModal }) {
             {isAdded ? (
               <>
                 <Check className="product-card-button-icon" />
-                Added
+                Añadido
               </>
             ) : (
               <>
-                <Plus className="product-card-button-icon" />
-                Add
+                <ShoppingBag className="product-card-button-icon" />
+                Añadir
               </>
             )}
           </Button>

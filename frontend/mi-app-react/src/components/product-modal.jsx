@@ -141,7 +141,7 @@ export function ProductModal({ product, isOpen, onClose }) {
               </div>
               <span className="product-modal-rating-value">{product.rating}</span>
               <span className="product-modal-rating-count">
-                ({product.reviews} reviews)
+                ({product.reviews} reseñas)
               </span>
             </div>
 
@@ -160,9 +160,9 @@ export function ProductModal({ product, isOpen, onClose }) {
                     lowStock ? 'product-modal-stock-low' :
                     'product-modal-stock-available'
                   }`}>
-                    {!inStock ? 'Out of Stock' :
-                     lowStock ? `Only ${stock} left!` :
-                     `${stock} available`}
+                    {!inStock ? 'Agotado' :
+                     lowStock ? `¡Solo ${stock} disponibles!` :
+                     `${stock} disponibles`}
                   </span>
                 </div>
               </div>
@@ -243,17 +243,17 @@ export function ProductModal({ product, isOpen, onClose }) {
               {!inStock ? (
                 <>
                   <ShoppingCart className="product-modal-cart-icon" />
-                  Out of Stock
+                  Agotado
                 </>
               ) : isAdded ? (
                 <>
                   <Check className="product-modal-cart-icon" />
-                  Added to Cart!
+                  ¡Agregado al Carrito!
                 </>
               ) : (
                 <>
                   <ShoppingCart className="product-modal-cart-icon" />
-                  Add to Cart - {formatCurrency(product.price * quantity)}
+                  Agregar al Carrito - {formatCurrency(product.price * quantity)}
                 </>
               )}
             </Button>
