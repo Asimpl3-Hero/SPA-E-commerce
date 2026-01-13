@@ -73,11 +73,28 @@ const getWompiPublicKey = () => {
     return process.env.VITE_WOMPI_PUBLIC_KEY;
   }
 
-  return 'pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7';
+  return import.meta.env.VITE_WOMPI_PUBLIC_KEY;
+};
+
+const getWompiScriptUrl = () => {
+  try {
+    const importMeta = new Function('return typeof import !== "undefined" ? import.meta : undefined')();
+    if (importMeta && importMeta.env && importMeta.env.VITE_WOMPI_SCRIPT_URL) {
+      return importMeta.env.VITE_WOMPI_SCRIPT_URL;
+    }
+  } catch (e) {
+    // Silent catch
+  }
+
+  if (typeof process !== 'undefined' && process.env && process.env.VITE_WOMPI_SCRIPT_URL) {
+    return process.env.VITE_WOMPI_SCRIPT_URL;
+  }
+
+  return import.meta.env.VITE_WOMPI_SCRIPT_URL;
 };
 
 export const WOMPI_CONFIG = {
   PUBLIC_KEY: getWompiPublicKey(),
-  SCRIPT_URL: 'https://checkout.wompi.co/widget.js',
+  SCRIPT_URL: getWompiScriptUrl(),
   CURRENCY: 'COP',
 };

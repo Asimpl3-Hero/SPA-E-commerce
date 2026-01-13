@@ -4,14 +4,16 @@
  */
 
 // Default API base URL
-const DEFAULT_API_BASE_URL = 'http://localhost:4567/api';
+const DEFAULT_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Helper to safely get environment variable with Jest compatibility
 const getApiBaseUrl = () => {
   try {
     // Try to access import.meta.env (Vite environment)
     // Using indirect eval to avoid syntax error in Jest
-    const importMeta = new Function('return typeof import !== "undefined" ? import.meta : undefined')();
+    const importMeta = new Function(
+      'return typeof import !== "undefined" ? import.meta : undefined'
+    )();
     if (importMeta && importMeta.env && importMeta.env.VITE_API_BASE_URL) {
       return importMeta.env.VITE_API_BASE_URL;
     }
@@ -20,7 +22,11 @@ const getApiBaseUrl = () => {
   }
 
   // Fallback to process.env for Jest/Node
-  if (typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE_URL) {
+  if (
+    typeof process !== "undefined" &&
+    process.env &&
+    process.env.VITE_API_BASE_URL
+  ) {
     return process.env.VITE_API_BASE_URL;
   }
 
@@ -37,20 +43,20 @@ export const API_URL = API_BASE_URL;
 export const API_ENDPOINTS = {
   // Checkout & Orders
   CHECKOUT: {
-    CREATE_ORDER: '/checkout/create-order',
-    PROCESS_PAYMENT: '/checkout/process-payment',
-    GET_ORDER: '/checkout/order/:reference',
-    ACCEPTANCE_TOKEN: '/checkout/acceptance-token',
+    CREATE_ORDER: "/checkout/create-order",
+    PROCESS_PAYMENT: "/checkout/process-payment",
+    GET_ORDER: "/checkout/order/:reference",
+    ACCEPTANCE_TOKEN: "/checkout/acceptance-token",
   },
   // Products
   PRODUCTS: {
-    LIST: '/products',
-    DETAIL: '/products/:id',
-    SEARCH: '/products?search=:query',
+    LIST: "/products",
+    DETAIL: "/products/:id",
+    SEARCH: "/products?search=:query",
   },
   // Categories
   CATEGORIES: {
-    LIST: '/categories',
+    LIST: "/categories",
   },
 };
 
