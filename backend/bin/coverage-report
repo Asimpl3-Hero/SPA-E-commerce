@@ -1,0 +1,120 @@
+#!/usr/bin/env ruby
+# Generate detailed coverage report
+
+require 'json'
+require 'fileutils'
+
+puts "\n📊 Generating detailed coverage report...\n\n"
+
+# Run tests with coverage
+system('bundle exec rspec --format json --out rspec_results.json')
+
+exit_code = $?.exitstatus
+
+if exit_code != 0
+  puts "\n❌ Tests failed! Fix the tests before generating coverage report.\n"
+  exit exit_code
+end
+
+# Parse test results
+if File.exist?('rspec_results.json')
+  results = JSON.parse(File.read('rspec_results.json'))
+
+  total = results['summary']['example_count']
+  failures = results['summary']['failure_count']
+  pending = results['summary']['pending_count']
+  duration = results['summary']['duration']
+
+  puts "\n" + "="*80
+  puts "TEST RESULTS SUMMARY"
+  puts "="*80
+  puts "Total Examples:     #{total}"
+  puts "Passed:             #{total - failures - pending}"
+  puts "Failed:             #{failures}"
+  puts "Pending:            #{pending}"
+  puts "Duration:           #{duration.round(2)}s"
+  puts "="*80
+end
+
+# Parse coverage results
+if File.exist?('coverage/.resultset.json')
+  coverage_data = JSON.parse(File.read('coverage/.resultset.json'))
+
+  # Calculate coverage per group
+  puts "\n" + "="*80
+  puts "COVERAGE BY GROUP"
+  puts "="*80
+
+  # This is a simplified version - SimpleCov generates more detailed reports
+  if File.exist?('coverage/.last_run.json')
+    last_run = JSON.parse(File.read('coverage/.last_run.json'))
+
+    total_lines = last_run['result']['covered_percent']
+    puts "Overall Coverage:   #{total_lines.round(2)}%"
+
+    if total_lines >= 80
+      puts "Status:             ✅ PASSED (>= 80%)"
+    else
+      puts "Status:             ❌ FAILED (< 80%)"
+    end
+  end
+  puts "="*80
+
+  puts "\n📁 Detailed report available at: coverage/index.html\n"
+
+  # Create a simple text report
+  report_file = 'coverage/coverage_summary.txt'
+  File.open(report_file, 'w') do |f|
+    f.puts "="*80
+    f.puts "COVERAGE REPORT - #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
+    f.puts "="*80
+    f.puts ""
+
+    if File.exist?('rspec_results.json')
+      f.puts "TEST RESULTS:"
+      f.puts "-" * 40
+      f.puts "Total Examples:     #{total}"
+      f.puts "Passed:             #{total - failures - pending}"
+      f.puts "Failed:             #{failures}"
+      f.puts "Pending:            #{pending}"
+      f.puts "Duration:           #{duration.round(2)}s"
+      f.puts ""
+    end
+
+    if File.exist?('coverage/.last_run.json')
+      last_run = JSON.parse(File.read('coverage/.last_run.json'))
+      total_coverage = last_run['result']['covered_percent']
+
+      f.puts "COVERAGE:"
+      f.puts "-" * 40
+      f.puts "Overall Coverage:   #{total_coverage.round(2)}%"
+      f.puts "Status:             #{total_coverage >= 80 ? '✅ PASSED' : '❌ FAILED'}"
+      f.puts ""
+    end
+
+    f.puts "="*80
+    f.puts ""
+    f.puts "HTML Report: coverage/index.html"
+    f.puts "="*80
+  end
+
+  puts "📄 Text summary saved to: #{report_file}\n\n"
+else
+  puts "\n⚠️  Coverage data not found. Make sure SimpleCov is properly configured.\n"
+end
+
+# Open HTML report
+if File.exist?('coverage/index.html')
+  puts "🌐 Opening HTML coverage report...\n"
+
+  case RUBY_PLATFORM
+  when /mswin|mingw|cygwin/
+    system('start coverage/index.html')
+  when /darwin/
+    system('open coverage/index.html')
+  when /linux/
+    system('xdg-open coverage/index.html')
+  end
+end
+
+puts "\n✅ Coverage report generation complete!\n\n"

@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# Quick test runner script
+
+require 'optparse'
+
+options = {
+  format: 'progress',
+  pattern: nil,
+  tag: nil
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/test [options]"
+
+  opts.on("-d", "--documentation", "Show documentation format") do
+    options[:format] = 'documentation'
+  end
+
+  opts.on("-f", "--failures", "Show only failures") do
+    options[:format] = 'failures'
+  end
+
+  opts.on("-p", "--pattern PATTERN", "Run tests matching pattern") do |pattern|
+    options[:pattern] = pattern
+  end
+
+  opts.on("-t", "--tag TAG", "Run tests with specific tag") do |tag|
+    options[:tag] = tag
+  end
+
+  opts.on("-h", "--help", "Show this help message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+# Build command
+cmd = "bundle exec rspec"
+cmd += " --format #{options[:format]}"
+cmd += " --pattern '#{options[:pattern]}'" if options[:pattern]
+cmd += " --tag #{options[:tag]}" if options[:tag]
+
+# Add any additional arguments
+cmd += " #{ARGV.join(' ')}" unless ARGV.empty?
+
+puts "Running: #{cmd}\n\n"
+system(cmd)
+
+exit $?.exitstatus

@@ -1,0 +1,267 @@
+
+Randomized with seed 51426
+
+Domain::Entities::Product
+  #low_stock?
+    returns true when stock is between 1 and 10
+    returns false when stock is 0
+    returns false when stock is greater than 10
+  #initialize
+    accepts optional attributes
+    creates a product with required attributes
+    sets default values for optional attributes
+  #has_discount?
+    returns false when original price equals price
+    returns false when original price is nil
+    returns true when original price is greater than price
+  #to_h
+    converts product to hash with camelCase keys
+    excludes badge when text or variant is missing
+    excludes nil values
+    includes badge when both text and variant are present
+  #discount_percentage
+    calculates discount percentage correctly
+    rounds discount percentage
+    returns 0 when there is no discount
+  #in_stock?
+    returns false when stock is 0
+    returns true when stock is greater than 0
+
+Infrastructure::Adapters::Web::CategoriesController
+  GET /api/categories
+    when categories exist
+      returns all categories
+    when no categories exist
+      returns empty array
+    when use case fails
+      returns 500 with error message
+
+Application::UseCases::GetProductById
+  #call
+    when id is a string
+      converts to integer and finds product
+    when id is negative
+      returns failure with validation error
+    when product does not exist
+      returns failure with not found error
+    when id is zero
+      returns failure with validation error
+    when id is nil
+      returns failure with validation error
+    when product exists
+      returns success with product hash
+    when repository raises an error
+      returns failure with server error
+
+Application::UseCases::CreateProduct
+  #call
+    when original_price is greater than price
+      creates product successfully
+    when image is missing
+      returns validation error
+    when original_price is less than price
+      returns validation error
+    when category is missing
+      returns validation error
+    when name is missing
+      returns validation error
+    when name is empty string
+      returns validation error
+    when repository raises an error
+      returns server error
+    when price is zero
+      returns validation error
+    when name is whitespace only
+      returns validation error
+    when price is missing
+      returns validation error
+    when original_price equals price
+      returns validation error
+    when multiple fields are missing
+      returns all missing fields
+    with valid product data
+      creates product and returns success
+    when description is missing
+      returns validation error
+    with optional fields
+      creates product with all fields
+    when price is negative
+      returns validation error
+
+Application::UseCases::GetAllProducts
+  #call
+    when no products are found
+      returns success with empty array
+    when repository returns products successfully
+      returns success with products array
+    when repository raises an error
+      returns failure with error message
+    when filters are provided
+      passes filters to repository
+
+Infrastructure::Adapters::Web::ProductsController
+  GET /api/products/:id
+    when product not found
+      returns 404
+    when validation error
+      returns 400
+    when product exists
+      returns product data
+  POST /api/products
+    with valid data
+      creates product and returns 201
+    with validation error
+      returns 400 with error details
+    with invalid JSON
+      returns 400
+  GET /api/products
+    with q parameter
+      uses search use case
+    without search query
+      returns all products
+    with filters
+      passes filters to use case
+    with search query
+      uses search use case instead of get all
+    when use case fails
+      returns error response
+
+Infrastructure::Adapters::Web::HealthController
+  GET /
+    includes endpoints information
+    returns API information
+    returns 200 status
+  GET /health
+    returns 200 status
+    returns status ok
+    returns JSON content type
+    includes timestamp
+
+Domain::ValueObjects::Result
+  .server_error
+    creates a server error failure
+  result pattern matching
+    can be used in failure case
+    can be used in success case
+  monadic behavior
+    supports fmap for success
+    can chain operations with bind
+    stops at first failure in chain
+    fmap does not execute on failure
+    bind propagates failure
+    supports bind for success
+  .validation_error
+    creates validation error without details
+    creates a validation error failure
+    includes details when provided
+  .success
+    creates a success result with value
+    creates a success result without value
+    can wrap complex objects
+  .not_found
+    creates a not found error without id
+    creates a not found error with resource and id
+  .failure
+    creates a failure result with error
+    wraps any error value
+
+Application::UseCases::GetAllCategories
+  #call
+    when categories exist
+      returns success with categories array
+    when no categories exist
+      returns success with empty array
+    when repository raises an error
+      returns failure with server error
+
+Domain::Entities::Category
+  #to_h
+    converts category to hash
+    does not include created_at in hash
+  #initialize
+    accepts optional created_at attribute
+    creates a category with required attributes
+    sets created_at to nil by default
+
+Infrastructure::Adapters::Payment::WompiService
+  .create_transaction
+    when transaction fails
+      returns failure with error
+    when response is invalid JSON
+      returns parse error
+    with NEQUI payment method
+      sends phone_number in payment_method
+    when transaction is successful
+      returns success with transaction data
+  .validate_webhook_signature
+    with invalid signature
+      returns false
+    with valid signature
+      returns true
+  .get_transaction
+    when transaction not found
+      returns failure
+    when transaction exists
+      returns transaction data
+  .get_acceptance_token
+    when request is successful
+      returns acceptance token
+    when request fails
+      returns nil
+
+Application::UseCases::SearchProducts
+  #call
+    when matching product name
+      includes product in results
+    when repository raises an error
+      returns failure with server error
+    when no products match query
+      returns empty array
+    when matching product description
+      includes product in results
+    when matching product category
+      includes product in results
+    when query is only whitespace
+      returns empty array
+    when query is nil
+      returns empty array
+    when query is empty
+      returns empty array
+    when query and category are provided
+      finds products by category and filters by query
+    when category is empty string
+      searches without category filter
+    when query is provided without category
+      searches products using repository
+
+Domain::ValueObjects::Money
+  #==
+    compares rounded values
+    returns true when amounts are equal
+    returns false when amounts are different
+  #<
+    returns false when amount is greater
+    returns true when amount is less
+    returns false when amounts are equal
+  #to_f
+    converts to float
+  #to_s
+    formats integer amounts with 2 decimal places
+    formats to string with 2 decimal places
+  #>
+    returns true when amount is greater
+    returns false when amounts are equal
+    returns false when amount is less
+  #initialize
+    rounds amount to 2 decimal places
+    creates money object with valid amount
+    raises error for non-numeric amount
+    raises error for negative amount
+    accepts zero as valid amount
+    accepts integer amounts
+
+Finished in 0.51097 seconds (files took 3.96 seconds to load)
+132 examples, 0 failures
+
+Randomized with seed 51426
+

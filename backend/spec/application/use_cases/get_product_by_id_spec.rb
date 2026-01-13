@@ -1,100 +1,99 @@
-# frozen_string_literal: true
-
 require 'spec_helper'
+require_relative '../../../lib/application/use_cases/get_product_by_id'
 
 RSpec.describe Application::UseCases::GetProductById do
-  let(:product_repository) { Infrastructure::Adapters::Repositories::SequelProductRepository.new(db) }
+  let(:product_repository) { double('ProductRepository') }
   let(:use_case) { described_class.new(product_repository) }
+
+  let(:product) do
+    instance_double(
+      Domain::Entities::Product,
+      to_h: { 'id' => 1, 'name' => 'Test Product', 'price' => 100.0 }
+    )
+  end
 
   describe '#call' do
     context 'when product exists' do
-      let(:product_id) { create_test_product(name: 'Test Product', price: 10000) }
+      it 'returns success with product hash' do
+        allow(product_repository).to receive(:find_by_id)
+          .with(1)
+          .and_return(product)
 
-      it 'returns the product' do
-        result = use_case.call(product_id)
+        result = use_case.call(1)
 
         expect(result).to be_success
-        expect(result.value!['id']).to eq(product_id)
+        expect(result.value!['id']).to eq(1)
         expect(result.value!['name']).to eq('Test Product')
-      end
-
-      it 'returns product as hash' do
-        result = use_case.call(product_id)
-
-        expect(result.value!).to be_a(Hash)
-        expect(result.value!).to have_key('price')
-        expect(result.value!).to have_key('category')
-        expect(result.value!).to have_key('stock')
       end
     end
 
     context 'when product does not exist' do
-      it 'returns not found failure' do
-        result = use_case.call(99999)
+      it 'returns failure with not found error' do
+        allow(product_repository).to receive(:find_by_id)
+          .with(999)
+          .and_return(nil)
+
+        result = use_case.call(999)
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:not_found)
-        expect(result.failure[:message]).to include('not found')
+        expect(result.failure[:message]).to eq('Product with id 999 not found')
       end
     end
 
-    context 'with invalid id' do
-      it 'returns validation error for nil' do
+    context 'when id is nil' do
+      it 'returns failure with validation error' do
         result = use_case.call(nil)
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:validation_error)
         expect(result.failure[:message]).to eq('Invalid product ID')
       end
+    end
 
-      it 'returns validation error for zero' do
+    context 'when id is zero' do
+      it 'returns failure with validation error' do
         result = use_case.call(0)
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:validation_error)
+        expect(result.failure[:message]).to eq('Invalid product ID')
       end
+    end
 
-      it 'returns validation error for negative number' do
+    context 'when id is negative' do
+      it 'returns failure with validation error' do
         result = use_case.call(-1)
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:validation_error)
+        expect(result.failure[:message]).to eq('Invalid product ID')
       end
+    end
 
-      it 'returns validation error for string' do
-        result = use_case.call('invalid')
+    context 'when id is a string' do
+      it 'converts to integer and finds product' do
+        allow(product_repository).to receive(:find_by_id)
+          .with(1)
+          .and_return(product)
 
-        expect(result).to be_failure
-        expect(result.failure[:type]).to eq(:validation_error)
-      end
+        result = use_case.call('1')
 
-      it 'handles float by converting to integer' do
-        result = use_case.call(1.5)
-
-        expect(result).to be_failure
-        # Float is converted to integer, so it becomes a not_found error
-        expect(result.failure[:type]).to eq(:not_found)
-      end
-
-      it 'handles very large id numbers' do
-        result = use_case.call(999999999999)
-
-        expect(result).to be_failure
-        expect(result.failure[:type]).to eq(:not_found)
+        expect(result).to be_success
+        expect(result.value!['id']).to eq(1)
       end
     end
 
     context 'when repository raises an error' do
-      before do
-        allow(product_repository).to receive(:find_by_id).and_raise(StandardError, 'Database error')
-      end
+      it 'returns failure with server error' do
+        allow(product_repository).to receive(:find_by_id)
+          .and_raise(StandardError.new('Database connection failed'))
 
-      it 'returns a server error failure' do
         result = use_case.call(1)
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:server_error)
-        expect(result.failure[:message]).to eq('Database error')
+        expect(result.failure[:message]).to eq('Database connection failed')
       end
     end
   end

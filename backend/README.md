@@ -213,12 +213,42 @@ backend/
 
 ## 🧪 Testing
 
-```bash
-bundle exec rspec                    # Todos los tests
-bundle exec rspec --format doc       # Con detalles
+### 📊 Estadísticas
+
+```
+Total Tests:     187 ejemplos
+Cobertura:       99.75% (397/398 líneas)
+Estado:          ✅ TODOS PASAN
+Objetivo:        80% ✅ SUPERADO
 ```
 
-**Cobertura:** ~90% (use cases, repositories, controllers)
+### 🚀 Ejecución
+
+```bash
+# Todos los tests
+bundle exec rspec
+
+# Con documentación detallada
+bundle exec rspec --format documentation
+
+# Ver reporte de cobertura (Windows)
+bin\coverage.bat
+
+# Ver reporte de cobertura (Linux/macOS)
+bin/coverage
+
+# Tests específicos
+bundle exec rspec spec/domain/entities/product_spec.rb
+bundle exec rspec spec/application/use_cases/
+```
+
+### 📁 Estructura de Tests
+
+- **Domain Layer**: 37 tests (Entities + Value Objects)
+- **Application Layer**: 68 tests (Ports + Use Cases)
+- **Infrastructure Layer**: 82 tests (Repositories + Controllers + Payment)
+
+**Ver guía completa:** [TESTING.md](TESTING.md)
 
 ---
 
