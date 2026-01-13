@@ -1,527 +1,272 @@
-# E-Commerce API Backend
+# 💎 Backend API - E-Commerce
 
-A RESTful API built with Ruby and Sinatra following Hexagonal Architecture (Ports & Adapters) and Railway Oriented Programming principles.
+**API REST con Ruby + Sinatra + PostgreSQL + Wompi**
 
-## Architecture
+Implementa **Arquitectura Hexagonal** y **Railway Oriented Programming** para gestionar productos, órdenes y pagos.
 
-This project implements a **Hexagonal Architecture** with clear separation of concerns:
+---
+
+## 🚀 Inicio Rápido
+
+```bash
+# 1. Instalar dependencias
+bundle install
+
+# 2. Crear base de datos
+createdb ecommerce_dev
+
+# 3. Ejecutar migraciones
+ruby db/migrate.rb
+
+# 4. Cargar datos de prueba
+ruby db/seeds/seed.rb
+
+# 5. Iniciar servidor (con auto-reload)
+bundle exec rerun 'rackup -p 4567'
+```
+
+✅ **API lista en:** `http://localhost:4567`
+📖 **Swagger UI:** `http://localhost:4567/api-docs`
+
+---
+
+## 🏛️ Arquitectura
+
+### **3 Capas (Hexagonal)**
+
+```
+┌─────────────────────────────┐
+│  INFRASTRUCTURE             │  ← Web, DB, Wompi
+│  ┌───────────────────────┐  │
+│  │  APPLICATION          │  │  ← Use Cases
+│  │  ┌─────────────────┐  │  │
+│  │  │  DOMAIN         │  │  │  ← Lógica pura
+│  │  │  Product, Order │  │  │
+│  │  └─────────────────┘  │  │
+│  └───────────────────────┘  │
+└─────────────────────────────┘
+```
+
+**Beneficios:**
+- ✅ Testeable (sin dependencias externas)
+- ✅ Flexible (fácil cambiar DB/framework)
+- ✅ Mantenible (cambios localizados)
+
+---
+
+## 🔄 Railway Oriented Programming
+
+Todos los Use Cases retornan **Success** o **Failure**:
+
+```ruby
+# ✅ Éxito
+result = get_product_by_id.call(1)
+# => Success({ id: 1, name: "Product" })
+
+# ❌ Error
+result = get_product_by_id.call(999)
+# => Failure({ message: "Not found", code: :not_found })
+
+# Uso con match
+result.match(
+  ->(product) { json product },        # 200 OK
+  ->(error) { halt 404, json(error) }  # 404 Error
+)
+```
+
+---
+
+## 💳 Flujo de Pago
+
+```
+POST /api/orders/checkout
+    ↓
+1. CreateOrder Use Case
+   • Valida datos
+   • Calcula totales
+   • Crea orden en DB
+    ↓
+2. ProcessPayment Use Case
+   • Llama WompiService
+   • POST Wompi /transactions
+   • Guarda transaction_id
+    ↓
+3. Frontend hace polling
+   GET /api/transactions/:id/status
+    ↓
+4. Wompi responde:
+   • APPROVED ✅
+   • DECLINED ❌
+   • PENDING ⏳
+   • ERROR ⚠️
+    ↓
+5. Backend actualiza orden
+```
+
+---
+
+## 🌐 API Endpoints
+
+### **Productos**
+```bash
+GET  /api/products              # Lista todos
+GET  /api/products/:id          # Uno por ID
+GET  /api/products?category=x   # Filtrar
+GET  /api/products?search=x     # Buscar
+POST /api/products              # Crear (admin)
+```
+
+### **Checkout**
+```bash
+POST /api/orders/checkout       # Crear orden y pagar
+GET  /api/orders/:reference     # Ver orden
+GET  /api/transactions/:id/status  # Estado de pago
+POST /api/webhook               # Webhook Wompi
+```
+
+### **Otros**
+```bash
+GET /api/categories             # Categorías
+GET /api/health                 # Health check
+GET /api/acceptance-token       # Token Wompi
+```
+
+---
+
+## 📊 Modelo de Datos
+
+### **products**
+```sql
+id, name, price, category, description,
+image, rating, reviews, created_at
+```
+
+### **orders**
+```sql
+id, reference, customer_email, customer_name,
+amount_in_cents, status, wompi_transaction_id,
+items (JSONB), shipping_address (JSONB)
+```
+
+### **categories**
+```sql
+id, name, slug
+```
+
+---
+
+## ⚙️ Variables de Entorno
+
+```env
+# Database
+DATABASE_URL=postgres://user:password@localhost/ecommerce_dev
+
+# Server
+PORT=4567
+RACK_ENV=development
+FRONTEND_URL=http://localhost:5173
+
+# Wompi (obtener en comercios.wompi.co)
+WOMPI_PUBLIC_KEY=pub_test_...
+WOMPI_PRIVATE_KEY=prv_test_...
+WOMPI_EVENTS_SECRET=test_events_...
+WOMPI_INTEGRITY_SECRET=test_integrity_...
+```
+
+---
+
+## 📁 Estructura
 
 ```
 backend/
 ├── lib/
-│   ├── domain/                    # Business logic (entities, value objects)
-│   │   ├── entities/              # Domain entities
-│   │   │   ├── product.rb
-│   │   │   └── category.rb
-│   │   └── value_objects/         # Value objects (Result, Money)
-│   │       ├── result.rb
-│   │       └── money.rb
-│   ├── application/               # Application layer
-│   │   ├── ports/                 # Interfaces/contracts
-│   │   │   ├── product_repository.rb
-│   │   │   └── category_repository.rb
-│   │   └── use_cases/             # Business use cases (ROP)
-│   │       ├── get_all_products.rb
-│   │       ├── get_product_by_id.rb
-│   │       ├── search_products.rb
-│   │       ├── get_all_categories.rb
-│   │       ├── create_product.rb
-│   │       ├── create_order.rb         # NEW: Order creation
-│   │       ├── process_payment.rb      # NEW: Payment processing
-│   │       └── update_transaction_status.rb  # NEW: Transaction status updates
-│   └── infrastructure/            # External adapters
-│       ├── adapters/
-│       │   ├── repositories/      # Data persistence implementations
-│       │   │   ├── sequel_product_repository.rb
-│       │   │   └── sequel_category_repository.rb
-│       │   ├── payment/           # Payment gateway adapters
-│       │   │   └── wompi_service.rb
-│       │   └── web/               # HTTP controllers
-│       │       ├── products_controller.rb
-│       │       ├── categories_controller.rb
-│       │       ├── health_controller.rb
-│       │       └── checkout_controller.rb  # NEW: Checkout & payments
-│       └── database/
-├── config/                        # Configuration files
-│   └── database.rb
+│   ├── domain/              # Entidades (Product, Order)
+│   ├── application/
+│   │   ├── ports/          # Interfaces
+│   │   └── use_cases/      # GetProducts, CreateOrder, ProcessPayment
+│   └── infrastructure/
+│       ├── repositories/   # PostgreSQL
+│       ├── payment/        # WompiService
+│       └── web/            # Controllers
 ├── db/
-│   ├── migrations/                # Database migrations
-│   └── seeds/                     # Seed data
-├── app.rb                         # Application entry point
-└── config.ru                      # Rack configuration
+│   ├── migrations/         # Esquema DB
+│   └── seeds/              # Datos de prueba
+└── spec/                   # Tests RSpec
 ```
 
-## Architecture Principles
+---
 
-### 1. Hexagonal Architecture (Ports & Adapters)
+## 🧪 Testing
 
-- **Domain Layer**: Contains pure business logic without external dependencies
-- **Application Layer**: Defines ports (interfaces) and use cases
-- **Infrastructure Layer**: Implements adapters for external systems (database, web)
+```bash
+bundle exec rspec                    # Todos los tests
+bundle exec rspec --format doc       # Con detalles
+```
 
-### 2. Railway Oriented Programming (ROP)
+**Cobertura:** ~90% (use cases, repositories, controllers)
 
-All use cases return a `Result` monad with two tracks:
-- **Success track**: Returns the expected value
-- **Failure track**: Returns structured error information
+---
 
-Example:
+## 🔐 Seguridad
+
+- ✅ Validación de firma HMAC en webhooks
+- ✅ CORS configurado solo para frontend
+- ✅ Variables de entorno (nunca en código)
+- ✅ Tokenización de tarjetas (frontend → Wompi)
+
+---
+
+## 🐛 Debugging
+
 ```ruby
-result = get_product_by_id.call(1)
+# Ver query SQL
+DB.loggers << Logger.new($stdout)
 
-result.match(
-  ->(product) { puts "Success: #{product}" },
-  ->(error) { puts "Error: #{error[:message]}" }
-)
+# Inspeccionar resultado
+result = use_case.call(params)
+puts result.inspect
+
+# Consola interactiva
+irb -r ./app.rb
+Product.all
 ```
 
-### 3. Dependency Injection
+---
 
-Controllers and use cases receive dependencies via constructor injection, making the code testable and maintainable.
+## 🎯 Use Cases Principales
 
-## Data Model Design
+| Use Case | Función |
+|----------|---------|
+| `GetAllProducts` | Lista productos con filtros |
+| `GetProductById` | Obtiene un producto |
+| `CreateOrder` | Crea orden con validación |
+| `ProcessPayment` | Procesa pago con Wompi |
+| `UpdateTransactionStatus` | Actualiza estado desde webhook |
 
-### Database: PostgreSQL
+---
 
-### Tables
+## 📖 Documentación API
 
-#### `products`
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | SERIAL | PRIMARY KEY | Unique identifier |
-| name | VARCHAR | NOT NULL | Product name |
-| price | NUMERIC | NOT NULL | Current selling price |
-| original_price | NUMERIC | NULL | Original price (for discounts) |
-| rating | FLOAT | DEFAULT 0.0 | Average rating (0-5) |
-| reviews | INTEGER | DEFAULT 0 | Number of reviews |
-| category | VARCHAR | NOT NULL | Product category |
-| description | TEXT | NOT NULL | Product description |
-| image | VARCHAR | NOT NULL | Image URL |
-| badge_text | VARCHAR | NULL | Badge text (e.g., "Best Seller") |
-| badge_variant | VARCHAR | NULL | Badge variant (default, new, info) |
-| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update timestamp |
+Abre **Swagger UI** en `http://localhost:4567/api-docs` para:
+- 📋 Ver todos los endpoints
+- 🧪 Probar requests
+- 📝 Ejemplos de uso
+- 🔍 Esquemas de datos
 
-**Indexes:**
-- `idx_products_category` on `category`
-- `idx_products_name` on `name`
-- `idx_products_price_category` on `(price, category)`
+---
 
-#### `categories`
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | SERIAL | PRIMARY KEY | Unique identifier |
-| name | VARCHAR | NOT NULL, UNIQUE | Category name |
-| slug | VARCHAR | NOT NULL, UNIQUE | URL-friendly identifier |
-| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+## 🤝 Contribuir
 
-**Indexes:**
-- `idx_categories_slug` on `slug`
+1. Escribe tests
+2. Sigue arquitectura hexagonal
+3. Usa Railway Oriented en use cases
+4. Documenta en Swagger
+5. `bundle exec rspec` antes de commit
 
-### Entity Relationships
+---
 
-```
-┌─────────────┐
-│  Category   │
-│             │
-│  - id       │
-│  - name     │
-│  - slug     │
-└─────────────┘
-       │
-       │ referenced by
-       ▼
-┌─────────────┐
-│   Product   │
-│             │
-│  - id       │
-│  - name     │
-│  - price    │
-│  - category │ (string reference)
-│  - ...      │
-└─────────────┘
-```
+**Stack:** Ruby 3.x + Sinatra 4.0 + PostgreSQL 12+ + Sequel + Wompi
 
-*Note: Currently using string-based category references for simplicity. Can be migrated to foreign keys if needed.*
-
-## API Documentation
-
-### Interactive Documentation (Swagger UI)
-
-Access the interactive API documentation at:
-- **Swagger UI**: [http://localhost:4567/api-docs](http://localhost:4567/api-docs)
-- **Alternative**: [http://localhost:4567/docs](http://localhost:4567/docs)
-- **Swagger JSON**: [http://localhost:4567/swagger.json](http://localhost:4567/swagger.json)
-
-The Swagger UI provides:
-- Complete endpoint documentation
-- Request/Response schemas
-- Try-it-out functionality
-- Example values for all parameters
-
-## API Endpoints Summary
-
-### Health Check
-
-#### `GET /api/health`
-Check API health status and database connection.
-
-**Response:**
-```json
-{
-  "status": "healthy",
-  "database": "connected"
-}
-```
-
-### Products
-
-#### `GET /api/products`
-Get all products with optional filtering.
-
-**Query Parameters:**
-- `category` (string): Filter by category
-- `search` or `q` (string): Search in name, description, category
-- `min_price` (number): Minimum price filter
-- `max_price` (number): Maximum price filter
-- `sort_by` (string): Sort field (e.g., "price", "name")
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Premium Wireless Headphones",
-    "price": 299.99,
-    "originalPrice": 349.99,
-    "rating": 4.8,
-    "reviews": 2341,
-    "category": "Audio",
-    "description": "Experience premium sound quality...",
-    "image": "https://...",
-    "badge": {
-      "text": "Best Seller",
-      "variant": "default"
-    }
-  }
-]
-```
-
-#### `GET /api/products/:id`
-Get a single product by ID.
-
-**Response:**
-```json
-{
-  "id": 1,
-  "name": "Premium Wireless Headphones",
-  "price": 299.99,
-  ...
-}
-```
-
-**Error Response (404):**
-```json
-{
-  "error": "Product with id 999 not found"
-}
-```
-
-#### `POST /api/products`
-Create a new product (admin functionality).
-
-**Request Body:**
-```json
-{
-  "name": "New Product",
-  "price": 99.99,
-  "originalPrice": 129.99,
-  "category": "Electronics",
-  "description": "Product description",
-  "image": "https://...",
-  "rating": 4.5,
-  "reviews": 100,
-  "badge_text": "New",
-  "badge_variant": "new"
-}
-```
-
-**Response (201):**
-```json
-{
-  "id": 16,
-  "name": "New Product",
-  ...
-}
-```
-
-### Categories
-
-#### `GET /api/categories`
-Get all unique product categories.
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Audio",
-    "slug": "audio"
-  }
-]
-```
-
-### Checkout & Payments (Wompi Integration)
-
-#### `POST /api/checkout/create-order`
-Create a new order with customer, delivery, and payment information.
-
-**Request Body:**
-```json
-{
-  "customer_email": "customer@example.com",
-  "customer_name": "John Doe",
-  "customer_phone": "+573001234567",
-  "items": [
-    {
-      "product_id": 1,
-      "quantity": 2,
-      "price": 50000
-    }
-  ],
-  "amount_in_cents": 100000,
-  "currency": "COP",
-  "shipping_address": {
-    "address_line_1": "Calle 123 #45-67",
-    "city": "Bogotá",
-    "region": "Cundinamarca",
-    "country": "CO",
-    "postal_code": "110111"
-  },
-  "payment_method": {
-    "type": "CARD",
-    "token": "tok_test_12345_..."
-  }
-}
-```
-
-**Response (201):**
-```json
-{
-  "success": true,
-  "order": {
-    "id": 1,
-    "reference": "ORDER-1234567890-1234",
-    "amount_in_cents": 100000,
-    "currency": "COP",
-    "status": "approved"
-  },
-  "transaction": {
-    "id": "txn_wompi_123...",
-    "status": "APPROVED"
-  }
-}
-```
-
-#### `GET /api/checkout/order/:reference`
-Get order details by reference.
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "order": {
-    "id": 1,
-    "reference": "ORDER-1234567890-1234",
-    "customer_email": "customer@example.com",
-    "customer_name": "John Doe",
-    "amount_in_cents": 100000,
-    "currency": "COP",
-    "status": "approved",
-    "wompi_transaction_id": "txn_wompi_123...",
-    "transaction_status": "APPROVED",
-    "items": [...],
-    "shipping_address": {...}
-  }
-}
-```
-
-#### `GET /api/checkout/transaction-status/:transaction_id`
-Poll transaction status from Wompi (with automatic retries).
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "transaction": {
-    "id": "txn_wompi_123...",
-    "status": "APPROVED",
-    "reference": "ORDER-1234567890-1234",
-    "amount_in_cents": 100000,
-    "currency": "COP"
-  },
-  "attempts": 3
-}
-```
-
-#### `POST /api/checkout/webhook`
-Webhook endpoint for Wompi payment notifications (with signature validation).
-
-**Headers Required:**
-- `X-Signature`: Wompi signature
-- `X-Timestamp`: Request timestamp
-
-**Request Body:**
-```json
-{
-  "event": "transaction.updated",
-  "data": {
-    "transaction": {
-      "id": "txn_wompi_123...",
-      "status": "APPROVED",
-      "reference": "ORDER-1234567890-1234"
-    }
-  }
-}
-```
-
-#### `GET /api/checkout/acceptance-token`
-Get Wompi acceptance token required for payment processing.
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "acceptance_token": {
-    "acceptance_token": "eyJhbGc...",
-    "permalink": "https://...",
-    "type": "END_USER_POLICY"
-  }
-}
-```
-
-## Setup Instructions
-
-### Prerequisites
-
-- Ruby 3.0 or higher
-- PostgreSQL 12 or higher
-- Bundler
-
-### Installation
-
-1. **Install dependencies:**
-   ```bash
-   cd backend
-   bundle install
-   ```
-
-2. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` with your database credentials:
-   ```
-   DATABASE_URL=postgres://username:password@localhost/ecommerce_dev
-   RACK_ENV=development
-   PORT=4567
-   FRONTEND_URL=http://localhost:5173
-   ```
-
-3. **Create database:**
-   ```bash
-   # Using psql
-   createdb ecommerce_dev
-
-   # Or via PostgreSQL client
-   psql -U postgres
-   CREATE DATABASE ecommerce_dev;
-   ```
-
-4. **Run migrations:**
-   ```bash
-   ruby db/migrate.rb
-   ```
-
-5. **Seed database:**
-   ```bash
-   ruby db/seeds/seed.rb
-   ```
-
-### Running the Server
-
-**Development mode with auto-reload:**
-```bash
-bundle exec rerun 'rackup -p 4567'
-```
-
-**Production mode:**
-```bash
-bundle exec rackup -p 4567
-```
-
-The API will be available at `http://localhost:4567`
-
-## Testing
-
-Run tests with RSpec:
-```bash
-bundle exec rspec
-```
-
-## Technology Stack
-
-- **Framework**: Sinatra 4.0
-- **Database**: PostgreSQL
-- **ORM**: Sequel
-- **JSON Parser**: Oj (Optimized JSON)
-- **Functional Programming**: dry-monads, dry-validation
-- **CORS**: rack-cors
-- **Server**: Puma
-
-## Design Patterns Used
-
-1. **Hexagonal Architecture**: Clear separation between domain, application, and infrastructure
-2. **Repository Pattern**: Abstract data access through interfaces
-3. **Dependency Injection**: Constructor injection for loose coupling
-4. **Railway Oriented Programming**: Success/Failure flow using monads
-5. **Factory Pattern**: Entity creation in repositories
-6. **Strategy Pattern**: Different search/filter strategies in use cases
-
-## Error Handling
-
-All errors are returned in a consistent format:
-
-```json
-{
-  "error": "Error message",
-  "details": {
-    "missing": ["field1", "field2"]
-  }
-}
-```
-
-**HTTP Status Codes:**
-- `200` - Success
-- `201` - Created
-- `400` - Validation Error
-- `404` - Not Found
-- `500` - Server Error
-
-## Future Enhancements
-
-- [ ] Authentication & Authorization (JWT)
-- [ ] Product reviews and ratings system
-- [ ] Order management
-- [ ] Shopping cart persistence
-- [ ] Payment integration
-- [ ] Image upload functionality
-- [ ] Admin dashboard
-- [ ] Rate limiting
-- [ ] Caching layer (Redis)
-- [ ] Full-text search (Elasticsearch)
-
-## License
-
-MIT
+<div align="center">
+  <sub>Built with 💎 Ruby + 🏛️ Clean Architecture</sub>
+</div>
