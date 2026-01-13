@@ -15,6 +15,10 @@ require_relative 'lib/infrastructure/adapters/web/health_controller'
 require_relative 'lib/infrastructure/adapters/web/checkout_controller'
 
 class App < Sinatra::Base
+  # Serve static files from public directory
+  set :public_folder, File.join(File.dirname(__FILE__), 'public')
+  set :static, true
+
   # CORS Configuration
   use Rack::Cors do
     allow do
@@ -39,6 +43,15 @@ class App < Sinatra::Base
     get_all_categories: Application::UseCases::GetAllCategories.new(category_repository),
     create_product: Application::UseCases::CreateProduct.new(product_repository)
   }
+
+  # API Documentation routes
+  get '/api-docs' do
+    redirect '/swagger-ui.html'
+  end
+
+  get '/docs' do
+    redirect '/swagger-ui.html'
+  end
 
   # Mount controllers
   use Infrastructure::Adapters::Web::HealthController

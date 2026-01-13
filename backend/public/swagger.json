@@ -1,0 +1,542 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "E-Commerce API",
+    "description": "REST API for e-commerce platform with Wompi payment integration",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4567",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Products",
+      "description": "Product catalog operations"
+    },
+    {
+      "name": "Categories",
+      "description": "Product categories"
+    },
+    {
+      "name": "Checkout",
+      "description": "Order creation and payment processing"
+    },
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Check if the API is running and database is connected",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "healthy" },
+                    "database": { "type": "string", "example": "connected" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get all products",
+        "description": "Retrieve all products with their categories",
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "products": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Product" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get product by ID",
+        "description": "Retrieve a single product by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Product ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "product": { "$ref": "#/components/schemas/Product" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/api/products/search": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Search products",
+        "description": "Search products by name, description, or category",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Search query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "products": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Product" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get all categories",
+        "description": "Retrieve all product categories",
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "categories": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Category" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout/create-order": {
+      "post": {
+        "tags": ["Checkout"],
+        "summary": "Create order and process payment",
+        "description": "Creates a new order with customer info, delivery address, and processes payment via Wompi",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOrderRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CreateOrderResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or payment failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout/process-payment": {
+      "post": {
+        "tags": ["Checkout"],
+        "summary": "Process payment for existing order",
+        "description": "Process payment for an order that was created without payment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProcessPaymentRequest" }
+              }
+            }
+          },
+        "responses": {
+          "200": {
+            "description": "Payment processed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TransactionResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/api/checkout/order/{reference}": {
+      "get": {
+        "tags": ["Checkout"],
+        "summary": "Get order details",
+        "description": "Retrieve order details by reference",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Order reference (e.g., ORDER-1234567890-1234)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderDetailsResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found"
+          }
+        }
+      }
+    },
+    "/api/checkout/transaction-status/{transaction_id}": {
+      "get": {
+        "tags": ["Checkout"],
+        "summary": "Poll transaction status",
+        "description": "Poll Wompi API for transaction status (with automatic retries)",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Wompi transaction ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TransactionStatusResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/api/checkout/webhook": {
+      "post": {
+        "tags": ["Checkout"],
+        "summary": "Wompi webhook",
+        "description": "Receives payment status updates from Wompi (with signature validation)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WompiWebhook" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook processed"
+          },
+          "401": {
+            "description": "Invalid signature"
+          }
+        }
+      }
+    },
+    "/api/checkout/acceptance-token": {
+      "get": {
+        "tags": ["Checkout"],
+        "summary": "Get Wompi acceptance token",
+        "description": "Get the acceptance token required for payment processing",
+        "responses": {
+          "200": {
+            "description": "Acceptance token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "acceptance_token": {
+                      "type": "object",
+                      "properties": {
+                        "acceptance_token": { "type": "string" },
+                        "permalink": { "type": "string" },
+                        "type": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number", "format": "decimal" },
+          "stock": { "type": "integer" },
+          "category_id": { "type": "integer" },
+          "category_name": { "type": "string" },
+          "image_url": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "required": ["customer_email", "customer_name", "items", "amount_in_cents"],
+        "properties": {
+          "customer_email": { "type": "string", "format": "email" },
+          "customer_name": { "type": "string" },
+          "customer_phone": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product_id": { "type": "integer" },
+                "quantity": { "type": "integer" },
+                "price": { "type": "integer" }
+              }
+            }
+          },
+          "amount_in_cents": { "type": "integer", "example": 50000 },
+          "currency": { "type": "string", "default": "COP" },
+          "shipping_address": { "$ref": "#/components/schemas/ShippingAddress" },
+          "payment_method": { "$ref": "#/components/schemas/PaymentMethod" }
+        }
+      },
+      "ShippingAddress": {
+        "type": "object",
+        "properties": {
+          "address_line_1": { "type": "string" },
+          "address_line_2": { "type": "string" },
+          "city": { "type": "string" },
+          "region": { "type": "string" },
+          "country": { "type": "string", "default": "CO" },
+          "postal_code": { "type": "string" },
+          "phone_number": { "type": "string" }
+        }
+      },
+      "PaymentMethod": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["CARD", "NEQUI"], "default": "CARD" },
+          "token": { "type": "string", "description": "Payment token from Wompi (for CARD)" },
+          "phone_number": { "type": "string", "description": "Phone number (for NEQUI)" }
+        }
+      },
+      "CreateOrderResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "order": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "reference": { "type": "string" },
+              "amount_in_cents": { "type": "integer" },
+              "currency": { "type": "string" },
+              "status": { "type": "string", "enum": ["pending", "processing", "approved", "declined", "error"] }
+            }
+          },
+          "transaction": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "status": { "type": "string", "enum": ["PENDING", "APPROVED", "DECLINED", "ERROR", "VOIDED"] }
+            }
+          }
+        }
+      },
+      "ProcessPaymentRequest": {
+        "type": "object",
+        "required": ["reference", "payment_method_type", "payment_token"],
+        "properties": {
+          "reference": { "type": "string" },
+          "payment_method_type": { "type": "string", "enum": ["CARD", "NEQUI"] },
+          "payment_token": { "type": "string" },
+          "redirect_url": { "type": "string" }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "transaction": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "status": { "type": "string" },
+              "reference": { "type": "string" },
+              "payment_link_url": { "type": "string" },
+              "redirect_url": { "type": "string" }
+            }
+          }
+        }
+      },
+      "OrderDetailsResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "order": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "reference": { "type": "string" },
+              "customer_email": { "type": "string" },
+              "customer_name": { "type": "string" },
+              "amount_in_cents": { "type": "integer" },
+              "currency": { "type": "string" },
+              "status": { "type": "string" },
+              "wompi_transaction_id": { "type": "string" },
+              "transaction_status": { "type": "string" },
+              "items": { "type": "array" },
+              "shipping_address": { "$ref": "#/components/schemas/ShippingAddress" }
+            }
+          }
+        }
+      },
+      "TransactionStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "transaction": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "status": { "type": "string" },
+              "reference": { "type": "string" },
+              "amount_in_cents": { "type": "integer" },
+              "currency": { "type": "string" },
+              "payment_method_type": { "type": "string" },
+              "status_message": { "type": "string" }
+            }
+          },
+          "attempts": { "type": "integer", "description": "Number of polling attempts made" }
+        }
+      },
+      "WompiWebhook": {
+        "type": "object",
+        "properties": {
+          "event": { "type": "string", "example": "transaction.updated" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "transaction": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "status": { "type": "string" },
+                  "reference": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "details": { "type": "object" }
+        }
+      }
+    }
+  }
+}

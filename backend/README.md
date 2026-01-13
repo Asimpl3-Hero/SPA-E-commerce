@@ -25,16 +25,22 @@ backend/
 │   │       ├── get_product_by_id.rb
 │   │       ├── search_products.rb
 │   │       ├── get_all_categories.rb
-│   │       └── create_product.rb
+│   │       ├── create_product.rb
+│   │       ├── create_order.rb         # NEW: Order creation
+│   │       ├── process_payment.rb      # NEW: Payment processing
+│   │       └── update_transaction_status.rb  # NEW: Transaction status updates
 │   └── infrastructure/            # External adapters
 │       ├── adapters/
 │       │   ├── repositories/      # Data persistence implementations
 │       │   │   ├── sequel_product_repository.rb
 │       │   │   └── sequel_category_repository.rb
+│       │   ├── payment/           # Payment gateway adapters
+│       │   │   └── wompi_service.rb
 │       │   └── web/               # HTTP controllers
 │       │       ├── products_controller.rb
 │       │       ├── categories_controller.rb
-│       │       └── health_controller.rb
+│       │       ├── health_controller.rb
+│       │       └── checkout_controller.rb  # NEW: Checkout & payments
 │       └── database/
 ├── config/                        # Configuration files
 │   └── database.rb
@@ -138,18 +144,33 @@ Controllers and use cases receive dependencies via constructor injection, making
 
 *Note: Currently using string-based category references for simplicity. Can be migrated to foreign keys if needed.*
 
-## API Endpoints
+## API Documentation
+
+### Interactive Documentation (Swagger UI)
+
+Access the interactive API documentation at:
+- **Swagger UI**: [http://localhost:4567/api-docs](http://localhost:4567/api-docs)
+- **Alternative**: [http://localhost:4567/docs](http://localhost:4567/docs)
+- **Swagger JSON**: [http://localhost:4567/swagger.json](http://localhost:4567/swagger.json)
+
+The Swagger UI provides:
+- Complete endpoint documentation
+- Request/Response schemas
+- Try-it-out functionality
+- Example values for all parameters
+
+## API Endpoints Summary
 
 ### Health Check
 
-#### `GET /health`
-Check API health status.
+#### `GET /api/health`
+Check API health status and database connection.
 
 **Response:**
 ```json
 {
-  "status": "ok",
-  "timestamp": "2024-01-10T12:00:00Z"
+  "status": "healthy",
+  "database": "connected"
 }
 ```
 
@@ -242,13 +263,141 @@ Get all unique product categories.
 **Response:**
 ```json
 [
-  "Audio",
-  "Cameras",
-  "Gaming",
-  "Peripherals",
-  "Storage",
-  "Wearables"
+  {
+    "id": 1,
+    "name": "Audio",
+    "slug": "audio"
+  }
 ]
+```
+
+### Checkout & Payments (Wompi Integration)
+
+#### `POST /api/checkout/create-order`
+Create a new order with customer, delivery, and payment information.
+
+**Request Body:**
+```json
+{
+  "customer_email": "customer@example.com",
+  "customer_name": "John Doe",
+  "customer_phone": "+573001234567",
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2,
+      "price": 50000
+    }
+  ],
+  "amount_in_cents": 100000,
+  "currency": "COP",
+  "shipping_address": {
+    "address_line_1": "Calle 123 #45-67",
+    "city": "Bogotá",
+    "region": "Cundinamarca",
+    "country": "CO",
+    "postal_code": "110111"
+  },
+  "payment_method": {
+    "type": "CARD",
+    "token": "tok_test_12345_..."
+  }
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "order": {
+    "id": 1,
+    "reference": "ORDER-1234567890-1234",
+    "amount_in_cents": 100000,
+    "currency": "COP",
+    "status": "approved"
+  },
+  "transaction": {
+    "id": "txn_wompi_123...",
+    "status": "APPROVED"
+  }
+}
+```
+
+#### `GET /api/checkout/order/:reference`
+Get order details by reference.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "order": {
+    "id": 1,
+    "reference": "ORDER-1234567890-1234",
+    "customer_email": "customer@example.com",
+    "customer_name": "John Doe",
+    "amount_in_cents": 100000,
+    "currency": "COP",
+    "status": "approved",
+    "wompi_transaction_id": "txn_wompi_123...",
+    "transaction_status": "APPROVED",
+    "items": [...],
+    "shipping_address": {...}
+  }
+}
+```
+
+#### `GET /api/checkout/transaction-status/:transaction_id`
+Poll transaction status from Wompi (with automatic retries).
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "transaction": {
+    "id": "txn_wompi_123...",
+    "status": "APPROVED",
+    "reference": "ORDER-1234567890-1234",
+    "amount_in_cents": 100000,
+    "currency": "COP"
+  },
+  "attempts": 3
+}
+```
+
+#### `POST /api/checkout/webhook`
+Webhook endpoint for Wompi payment notifications (with signature validation).
+
+**Headers Required:**
+- `X-Signature`: Wompi signature
+- `X-Timestamp`: Request timestamp
+
+**Request Body:**
+```json
+{
+  "event": "transaction.updated",
+  "data": {
+    "transaction": {
+      "id": "txn_wompi_123...",
+      "status": "APPROVED",
+      "reference": "ORDER-1234567890-1234"
+    }
+  }
+}
+```
+
+#### `GET /api/checkout/acceptance-token`
+Get Wompi acceptance token required for payment processing.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "acceptance_token": {
+    "acceptance_token": "eyJhbGc...",
+    "permalink": "https://...",
+    "type": "END_USER_POLICY"
+  }
+}
 ```
 
 ## Setup Instructions

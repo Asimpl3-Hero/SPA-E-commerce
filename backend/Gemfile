@@ -25,6 +25,8 @@ gem 'dotenv', '~> 3.0'
 gem 'dry-validation', '~> 1.10'
 gem 'dry-monads', '~> 1.6'
 
+# API Documentation (using static swagger.json + UI)
+
 group :development do
   gem 'rerun', '~> 0.14'
 end
