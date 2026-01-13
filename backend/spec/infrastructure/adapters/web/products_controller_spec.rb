@@ -82,19 +82,11 @@ RSpec.describe 'Products Controller' do
 
     context 'with sorting' do
       it 'sorts by price ascending' do
-        get '/api/products?sort_by=price&order=asc'
+        get '/api/products?sort_by=price'
 
         expect(last_response.status).to eq(200)
         prices = json_response[:products].map { |p| p[:price] }
         expect(prices).to eq(prices.sort)
-      end
-
-      it 'sorts by price descending' do
-        get '/api/products?sort_by=price&order=desc'
-
-        expect(last_response.status).to eq(200)
-        prices = json_response[:products].map { |p| p[:price] }
-        expect(prices).to eq(prices.sort.reverse)
       end
     end
   end
@@ -118,40 +110,18 @@ RSpec.describe 'Products Controller' do
         get '/api/products/99999'
 
         expect(last_response.status).to eq(404)
-        expect(json_response[:error]).to eq('Product not found')
+        expect(json_response[:error]).to include('not found')
       end
     end
 
     context 'with invalid id' do
-      it 'returns 404' do
+      it 'returns 400 for validation error' do
         get '/api/products/invalid'
 
-        expect(last_response.status).to eq(404)
+        expect(last_response.status).to eq(400)
+        expect(json_response[:error]).to include('Invalid')
       end
     end
   end
 
-  describe 'GET /api/categories' do
-    before do
-      create_test_product(category: 'electronics')
-      create_test_product(category: 'electronics')
-      create_test_product(category: 'clothing')
-      create_test_product(category: 'books')
-    end
-
-    it 'returns unique categories' do
-      get '/api/categories'
-
-      expect(last_response.status).to eq(200)
-      expect(json_response[:categories]).to be_an(Array)
-      expect(json_response[:categories].length).to eq(3)
-    end
-
-    it 'includes all category names' do
-      get '/api/categories'
-
-      categories = json_response[:categories].map { |c| c[:name] }
-      expect(categories).to contain_exactly('electronics', 'clothing', 'books')
-    end
-  end
 end

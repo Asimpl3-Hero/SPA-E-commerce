@@ -3,43 +3,45 @@
 require 'spec_helper'
 
 RSpec.describe Application::UseCases::GetAllCategories do
-  let(:product_repository) { Infrastructure::Adapters::Repositories::SequelProductRepository.new(db) }
-  let(:use_case) { described_class.new(product_repository) }
+  let(:category_repository) { Infrastructure::Adapters::Repositories::SequelCategoryRepository.new(db) }
+  let(:use_case) { described_class.new(category_repository) }
 
   describe '#call' do
-    context 'with products in database' do
+    context 'with categories in database' do
       before do
-        create_test_product(category: 'electronics')
-        create_test_product(category: 'electronics')
-        create_test_product(category: 'clothing')
-        create_test_product(category: 'books')
-        create_test_product(category: 'clothing')
+        category_repository.create(name: 'Electronics', slug: 'electronics')
+        category_repository.create(name: 'Clothing', slug: 'clothing')
+        category_repository.create(name: 'Books', slug: 'books')
       end
 
-      it 'returns unique categories' do
+      it 'returns all categories as hashes' do
         result = use_case.call
 
         expect(result).to be_success
         expect(result.value!.length).to eq(3)
-        expect(result.value!).to contain_exactly('books', 'clothing', 'electronics')
+        expect(result.value!).to all(be_a(Hash))
       end
 
-      it 'returns sorted categories' do
+      it 'includes category attributes' do
         result = use_case.call
 
         expect(result).to be_success
-        expect(result.value!).to eq(result.value!.sort)
+        category = result.value!.first
+        expect(category).to have_key('id')
+        expect(category).to have_key('name')
+        expect(category).to have_key('slug')
       end
 
-      it 'returns categories as array of strings' do
+      it 'returns categories with correct data' do
         result = use_case.call
 
-        expect(result.value!).to be_an(Array)
-        expect(result.value!.all? { |c| c.is_a?(String) }).to be true
+        expect(result).to be_success
+        slugs = result.value!.map { |c| c['slug'] }
+        expect(slugs).to contain_exactly('electronics', 'clothing', 'books')
       end
     end
 
-    context 'with no products' do
+    context 'with no categories' do
       it 'returns empty array' do
         result = use_case.call
 
@@ -50,8 +52,7 @@ RSpec.describe Application::UseCases::GetAllCategories do
 
     context 'when repository raises an error' do
       before do
-        create_test_product # Create at least one product
-        allow(product_repository).to receive(:find_all).and_raise(StandardError, 'Database error')
+        allow(category_repository).to receive(:find_all).and_raise(StandardError, 'Database error')
       end
 
       it 'returns a server error failure' do

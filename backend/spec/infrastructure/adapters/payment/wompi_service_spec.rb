@@ -330,5 +330,349 @@ RSpec.describe Infrastructure::Adapters::Payment::WompiService do
         expect(result[:error][:type]).to eq('parse_error')
       end
     end
+
+    context 'with error response without error key' do
+      let(:response) do
+        double('Response', code: '500', body: '{}')
+      end
+
+      it 'returns unknown error' do
+        result = described_class.send(:parse_response, response)
+
+        expect(result[:success]).to be false
+        expect(result[:error][:type]).to eq('unknown_error')
+        expect(result[:error][:message]).to eq('Unknown error occurred')
+      end
+    end
+
+    context 'with 2xx status code variants' do
+      it 'returns success for 200 OK' do
+        response = double('Response', code: '200', body: '{"data":"test"}')
+        result = described_class.send(:parse_response, response)
+
+        expect(result[:success]).to be true
+      end
+
+      it 'returns success for 201 Created' do
+        response = double('Response', code: '201', body: '{"data":"test"}')
+        result = described_class.send(:parse_response, response)
+
+        expect(result[:success]).to be true
+      end
+
+      it 'returns success for 204 No Content' do
+        response = double('Response', code: '204', body: 'null')
+        result = described_class.send(:parse_response, response)
+
+        expect(result[:success]).to be true
+      end
+    end
+  end
+
+  describe '.create_transaction with custom installments' do
+    let(:params_with_installments) do
+      {
+        acceptance_token: 'test_acceptance_token',
+        amount_in_cents: 10000,
+        currency: 'COP',
+        customer_email: 'test@example.com',
+        payment_method_type: 'CARD',
+        payment_token: 'tok_test_12345',
+        installments: 6,
+        reference: 'ORDER-123',
+        phone_number: '+573001234567',
+        full_name: 'Test User',
+        shipping_address: {},
+        redirect_url: 'https://example.com/callback'
+      }
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 201, body: { data: {} }.to_json)
+    end
+
+    it 'includes custom installments when provided' do
+      described_class.create_transaction(params_with_installments)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:payment_method][:installments]).to eq(6)
+        }
+    end
+  end
+
+  describe '.create_transaction without currency' do
+    let(:params_no_currency) do
+      {
+        acceptance_token: 'test_acceptance_token',
+        amount_in_cents: 10000,
+        customer_email: 'test@example.com',
+        payment_method_type: 'CARD',
+        payment_token: 'tok_test_12345',
+        reference: 'ORDER-123',
+        phone_number: '+573001234567',
+        full_name: 'Test User',
+        shipping_address: {},
+        redirect_url: 'https://example.com/callback'
+      }
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 201, body: { data: {} }.to_json)
+    end
+
+    it 'defaults to COP currency' do
+      described_class.create_transaction(params_no_currency)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:currency]).to eq('COP')
+        }
+    end
+  end
+
+  describe 'edge cases for create_transaction' do
+    let(:base_params) do
+      {
+        acceptance_token: 'test_acceptance_token',
+        amount_in_cents: 10000,
+        currency: 'USD',
+        customer_email: 'test@example.com',
+        payment_method_type: 'CARD',
+        payment_token: 'tok_test_12345',
+        reference: 'ORDER-123',
+        phone_number: '+573001234567',
+        full_name: 'Test User',
+        shipping_address: {},
+        redirect_url: 'https://example.com/callback'
+      }
+    end
+
+    before do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 201, body: { data: {} }.to_json)
+    end
+
+    it 'handles different currencies' do
+      described_class.create_transaction(base_params)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:currency]).to eq('USD')
+        }
+    end
+
+    it 'includes shipping address in request' do
+      params_with_address = base_params.merge(
+        shipping_address: {
+          address_line_1: 'Test Street 123',
+          city: 'Medellin',
+          region: 'Antioquia',
+          country: 'CO'
+        }
+      )
+
+      described_class.create_transaction(params_with_address)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:shipping_address][:address_line_1]).to eq('Test Street 123')
+          expect(body[:shipping_address][:city]).to eq('Medellin')
+        }
+    end
+
+    it 'includes customer data in request' do
+      described_class.create_transaction(base_params)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:customer_data][:phone_number]).to eq('+573001234567')
+          expect(body[:customer_data][:full_name]).to eq('Test User')
+        }
+    end
+
+    it 'includes redirect_url in request' do
+      described_class.create_transaction(base_params)
+
+      expect(WebMock).to have_requested(:post, "#{base_url}/transactions")
+        .with { |req|
+          body = JSON.parse(req.body, symbolize_names: true)
+          expect(body[:redirect_url]).to eq('https://example.com/callback')
+        }
+    end
+  end
+
+  describe 'signature generation edge cases' do
+    it 'generates different signatures for different references' do
+      sig1 = described_class.send(:generate_signature, 'REF-001', 10000, 'COP')
+      sig2 = described_class.send(:generate_signature, 'REF-002', 10000, 'COP')
+
+      expect(sig1).not_to eq(sig2)
+    end
+
+    it 'generates different signatures for different amounts' do
+      sig1 = described_class.send(:generate_signature, 'REF-001', 10000, 'COP')
+      sig2 = described_class.send(:generate_signature, 'REF-001', 20000, 'COP')
+
+      expect(sig1).not_to eq(sig2)
+    end
+
+    it 'generates different signatures for different currencies' do
+      sig1 = described_class.send(:generate_signature, 'REF-001', 10000, 'COP')
+      sig2 = described_class.send(:generate_signature, 'REF-001', 10000, 'USD')
+
+      expect(sig1).not_to eq(sig2)
+    end
+
+    it 'generates consistent signatures for same parameters' do
+      sig1 = described_class.send(:generate_signature, 'REF-001', 10000, 'COP')
+      sig2 = described_class.send(:generate_signature, 'REF-001', 10000, 'COP')
+
+      expect(sig1).to eq(sig2)
+    end
+
+    it 'handles special characters in reference' do
+      sig = described_class.send(:generate_signature, 'REF-$#@-001', 10000, 'COP')
+
+      expect(sig).to be_a(String)
+      expect(sig.length).to eq(64) # SHA256 hex digest length
+    end
+  end
+
+  describe 'webhook signature validation edge cases' do
+    it 'validates signature with special characters in payload' do
+      payload = '{"event":"transaction.updated","data":{"status":"APPROVED"}}'
+      timestamp = '1234567890'
+      event_key = ENV['WOMPI_EVENT_KEY']
+
+      expected_sig = Digest::SHA256.hexdigest("#{payload}#{timestamp}#{event_key}")
+
+      result = described_class.validate_webhook_signature(payload, expected_sig, timestamp)
+
+      expect(result).to be true
+    end
+
+    it 'rejects signature with different timestamp' do
+      payload = '{"event":"test"}'
+      timestamp1 = '1234567890'
+      timestamp2 = '9876543210'
+      event_key = ENV['WOMPI_EVENT_KEY']
+
+      sig_with_ts1 = Digest::SHA256.hexdigest("#{payload}#{timestamp1}#{event_key}")
+
+      result = described_class.validate_webhook_signature(payload, sig_with_ts1, timestamp2)
+
+      expect(result).to be false
+    end
+
+    it 'rejects signature with modified payload' do
+      payload1 = '{"event":"test"}'
+      payload2 = '{"event":"modified"}'
+      timestamp = '1234567890'
+      event_key = ENV['WOMPI_EVENT_KEY']
+
+      sig = Digest::SHA256.hexdigest("#{payload1}#{timestamp}#{event_key}")
+
+      result = described_class.validate_webhook_signature(payload2, sig, timestamp)
+
+      expect(result).to be false
+    end
+
+    it 'handles empty payload' do
+      payload = ''
+      timestamp = '1234567890'
+      event_key = ENV['WOMPI_EVENT_KEY']
+
+      expected_sig = Digest::SHA256.hexdigest("#{payload}#{timestamp}#{event_key}")
+
+      result = described_class.validate_webhook_signature(payload, expected_sig, timestamp)
+
+      expect(result).to be true
+    end
+
+    it 'handles very long payload' do
+      payload = 'a' * 10000
+      timestamp = '1234567890'
+      event_key = ENV['WOMPI_EVENT_KEY']
+
+      expected_sig = Digest::SHA256.hexdigest("#{payload}#{timestamp}#{event_key}")
+
+      result = described_class.validate_webhook_signature(payload, expected_sig, timestamp)
+
+      expect(result).to be true
+    end
+  end
+
+  describe 'HTTP status code handling' do
+    let(:params) do
+      {
+        acceptance_token: 'test',
+        amount_in_cents: 10000,
+        currency: 'COP',
+        customer_email: 'test@example.com',
+        payment_method_type: 'CARD',
+        payment_token: 'tok_test',
+        reference: 'ORDER-123',
+        phone_number: '+573001234567',
+        full_name: 'Test User',
+        shipping_address: {},
+        redirect_url: 'https://example.com/callback'
+      }
+    end
+
+    it 'handles 401 Unauthorized' do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 401, body: { error: { type: 'unauthorized', message: 'Invalid credentials' } }.to_json)
+
+      result = described_class.create_transaction(params)
+
+      expect(result[:success]).to be false
+      expect(result[:error][:type]).to eq('unauthorized')
+    end
+
+    it 'handles 403 Forbidden' do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 403, body: { error: { type: 'forbidden' } }.to_json)
+
+      result = described_class.create_transaction(params)
+
+      expect(result[:success]).to be false
+      expect(result[:error][:type]).to eq('forbidden')
+    end
+
+    it 'handles 422 Unprocessable Entity' do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 422, body: { error: { type: 'validation_error', message: 'Invalid data' } }.to_json)
+
+      result = described_class.create_transaction(params)
+
+      expect(result[:success]).to be false
+      expect(result[:error][:message]).to eq('Invalid data')
+    end
+
+    it 'handles 500 Internal Server Error' do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 500, body: { error: { type: 'server_error' } }.to_json)
+
+      result = described_class.create_transaction(params)
+
+      expect(result[:success]).to be false
+    end
+
+    it 'handles 503 Service Unavailable' do
+      stub_request(:post, "#{base_url}/transactions")
+        .to_return(status: 503, body: { error: { type: 'service_unavailable' } }.to_json)
+
+      result = described_class.create_transaction(params)
+
+      expect(result[:success]).to be false
+    end
   end
 end

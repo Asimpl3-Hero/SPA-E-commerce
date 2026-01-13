@@ -21,7 +21,9 @@ module Infrastructure
             category: params[:category],
             max_price: params[:max_price]&.to_f,
             min_price: params[:min_price]&.to_f,
-            sort_by: params[:sort_by]&.to_sym
+            sort_by: params[:sort_by]&.to_sym,
+            limit: params[:limit]&.to_i,
+            offset: params[:offset]&.to_i
           }.compact
 
           search_query = params[:search] || params[:q]

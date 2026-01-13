@@ -2,6 +2,8 @@
 
 require 'simplecov'
 SimpleCov.start do
+  enable_coverage :branch
+
   add_filter '/spec/'
   add_filter '/config/'
   add_filter '/db/'
@@ -11,6 +13,9 @@ SimpleCov.start do
   add_group 'Use Cases', 'lib/use_cases'
   add_group 'Entities', 'lib/domain/entities'
   add_group 'Repositories', 'lib/infrastructure/repositories'
+
+  # Set minimum coverage thresholds
+  minimum_coverage line: 70, branch: 80
 end
 
 ENV['RACK_ENV'] = 'test'

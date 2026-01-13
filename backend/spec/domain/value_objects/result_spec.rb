@@ -259,12 +259,12 @@ RSpec.describe Domain::ValueObjects::Result do
 
     context 'using or for defaults' do
       it 'returns success value' do
-        result = described_class.success(42).or(0)
+        result = described_class.success(42).value_or(0)
         expect(result).to eq(42)
       end
 
       it 'returns default on failure' do
-        result = described_class.failure('Error').or(0)
+        result = described_class.failure('Error').value_or(0)
         expect(result).to eq(0)
       end
     end

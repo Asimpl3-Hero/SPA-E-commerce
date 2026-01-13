@@ -14,17 +14,17 @@ RSpec.describe Application::UseCases::GetProductById do
         result = use_case.call(product_id)
 
         expect(result).to be_success
-        expect(result.value![:id]).to eq(product_id)
-        expect(result.value![:name]).to eq('Test Product')
+        expect(result.value!['id']).to eq(product_id)
+        expect(result.value!['name']).to eq('Test Product')
       end
 
       it 'returns product as hash' do
         result = use_case.call(product_id)
 
         expect(result.value!).to be_a(Hash)
-        expect(result.value!).to have_key(:price)
-        expect(result.value!).to have_key(:category)
-        expect(result.value!).to have_key(:stock)
+        expect(result.value!).to have_key('price')
+        expect(result.value!).to have_key('category')
+        expect(result.value!).to have_key('stock')
       end
     end
 
@@ -59,6 +59,28 @@ RSpec.describe Application::UseCases::GetProductById do
 
         expect(result).to be_failure
         expect(result.failure[:type]).to eq(:validation_error)
+      end
+
+      it 'returns validation error for string' do
+        result = use_case.call('invalid')
+
+        expect(result).to be_failure
+        expect(result.failure[:type]).to eq(:validation_error)
+      end
+
+      it 'handles float by converting to integer' do
+        result = use_case.call(1.5)
+
+        expect(result).to be_failure
+        # Float is converted to integer, so it becomes a not_found error
+        expect(result.failure[:type]).to eq(:not_found)
+      end
+
+      it 'handles very large id numbers' do
+        result = use_case.call(999999999999)
+
+        expect(result).to be_failure
+        expect(result.failure[:type]).to eq(:not_found)
       end
     end
 

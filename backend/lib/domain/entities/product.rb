@@ -67,7 +67,7 @@ module Domain
 
       def discount_percentage
         return 0 unless has_discount?
-        ((@original_price - @price) / @original_price * 100).round
+        ((@original_price - @price).to_f / @original_price * 100).round
       end
 
       private

@@ -12,7 +12,7 @@ module Application
       def call(filters: {})
         # Railway: Success path
         products = @product_repository.find_all(filters: filters)
-        Success(products.map(&:to_h))
+        Success({ products: products.map(&:to_h) })
       rescue StandardError => e
         # Railway: Failure path
         Failure({ type: :server_error, message: e.message })

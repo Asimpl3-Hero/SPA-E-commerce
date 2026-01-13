@@ -82,16 +82,12 @@ RSpec.describe Domain::Entities::Product do
         expect(hash['image']).to eq('https://example.com/image.jpg')
       end
 
-      it 'returns camelCase keys' do
-        expect(hash).to have_key('originalPrice')
-      end
-
-      it 'excludes nil badge' do
+      it 'excludes nil optional fields' do
+        expect(hash).not_to have_key('originalPrice')
         expect(hash).not_to have_key('badge')
       end
 
       it 'compacts nil values' do
-        expect(hash['originalPrice']).to be_nil
         expect(hash.values).not_to include(nil)
       end
     end
@@ -189,6 +185,82 @@ RSpec.describe Domain::Entities::Product do
 
       it 'returns false' do
         expect(product.has_discount?).to be false
+      end
+    end
+  end
+
+  describe '#in_stock?' do
+    context 'when stock is greater than 0' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 5)) }
+
+      it 'returns true' do
+        expect(product.in_stock?).to be true
+      end
+    end
+
+    context 'when stock is 0' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 0)) }
+
+      it 'returns false' do
+        expect(product.in_stock?).to be false
+      end
+    end
+
+    context 'when stock is 1' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 1)) }
+
+      it 'returns true' do
+        expect(product.in_stock?).to be true
+      end
+    end
+  end
+
+  describe '#low_stock?' do
+    context 'when stock is between 1 and 10' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 5)) }
+
+      it 'returns true' do
+        expect(product.low_stock?).to be true
+      end
+    end
+
+    context 'when stock is exactly 10' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 10)) }
+
+      it 'returns true' do
+        expect(product.low_stock?).to be true
+      end
+    end
+
+    context 'when stock is exactly 11' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 11)) }
+
+      it 'returns false' do
+        expect(product.low_stock?).to be false
+      end
+    end
+
+    context 'when stock is 0' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 0)) }
+
+      it 'returns false' do
+        expect(product.low_stock?).to be false
+      end
+    end
+
+    context 'when stock is exactly 1' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 1)) }
+
+      it 'returns true' do
+        expect(product.low_stock?).to be true
+      end
+    end
+
+    context 'when stock is very high' do
+      let(:product) { described_class.new(**required_attributes.merge(stock: 100)) }
+
+      it 'returns false' do
+        expect(product.low_stock?).to be false
       end
     end
   end

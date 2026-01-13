@@ -78,6 +78,8 @@ module Infrastructure
           dataset = dataset.where { price <= filters[:max_price] } if filters[:max_price]
           dataset = dataset.where { price >= filters[:min_price] } if filters[:min_price]
           dataset = dataset.order(filters[:sort_by] || :id)
+          dataset = dataset.limit(filters[:limit]) if filters[:limit]
+          dataset = dataset.offset(filters[:offset]) if filters[:offset]
           dataset
         end
 

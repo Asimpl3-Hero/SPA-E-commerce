@@ -11,7 +11,7 @@ module Application
 
       def call(query:, category: nil)
         # Railway: Validate input
-        return Success([]) if query.nil? || query.strip.empty?
+        return Success({ products: [] }) if query.nil? || query.strip.empty?
 
         # Railway: Search products
         products = if category && !category.strip.empty?
@@ -21,7 +21,7 @@ module Application
                     @product_repository.search(query)
                   end
 
-        Success(products.map(&:to_h))
+        Success({ products: products.map(&:to_h) })
       rescue StandardError => e
         # Railway: Error handling
         Failure({ type: :server_error, message: e.message })
@@ -33,7 +33,7 @@ module Application
         pattern = query.downcase
         product.name.downcase.include?(pattern) ||
           product.description.downcase.include?(pattern) ||
-          product.category.downcase.include?(pattern)
+          (product.category&.downcase&.include?(pattern) || false)
       end
     end
   end

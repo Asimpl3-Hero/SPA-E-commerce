@@ -81,6 +81,74 @@ RSpec.describe Infrastructure::Adapters::Repositories::SequelProductRepository d
         names = products.map(&:name)
         expect(names).to eq(names.sort)
       end
+
+      it 'defaults to id when sort_by is nil' do
+        products = repository.find_all(filters: { sort_by: nil })
+
+        expect(products.length).to eq(3)
+      end
+
+      it 'sorts by id when sort_by is :id' do
+        products = repository.find_all(filters: { sort_by: :id })
+
+        ids = products.map(&:id)
+        expect(ids).to eq(ids.sort)
+      end
+
+      it 'sorts by category' do
+        products = repository.find_all(filters: { sort_by: :category })
+
+        categories = products.map(&:category)
+        expect(categories).to eq(categories.sort)
+      end
+    end
+
+    context 'with limit and offset' do
+      it 'applies limit correctly' do
+        products = repository.find_all(filters: { limit: 2 })
+
+        expect(products.length).to eq(2)
+      end
+
+      it 'applies offset correctly' do
+        products = repository.find_all(filters: { offset: 1 })
+
+        expect(products.length).to eq(2)
+      end
+
+      it 'combines limit and offset' do
+        products = repository.find_all(filters: { limit: 1, offset: 1 })
+
+        expect(products.length).to eq(1)
+      end
+
+      it 'handles offset greater than total records' do
+        products = repository.find_all(filters: { offset: 100 })
+
+        expect(products).to be_empty
+      end
+
+      it 'rejects limit of 0' do
+        expect {
+          repository.find_all(filters: { limit: 0 })
+        }.to raise_error(Sequel::Error, /Limits must be greater than or equal to 1/)
+      end
+    end
+
+    context 'with combined filters' do
+      it 'combines category, price, sort, limit and offset' do
+        products = repository.find_all(filters: {
+          category: 'electronics',
+          min_price: 5000,
+          max_price: 35000,
+          sort_by: :price,
+          limit: 1,
+          offset: 0
+        })
+
+        expect(products.length).to eq(1)
+        expect(products.first.category).to eq('electronics')
+      end
     end
 
     context 'when no products exist' do
@@ -311,7 +379,7 @@ RSpec.describe Infrastructure::Adapters::Repositories::SequelProductRepository d
   end
 
   describe '#delete' do
-    let(:product_id) { create_test_product }
+    let!(:product_id) { create_test_product }
 
     it 'deletes the product' do
       expect {

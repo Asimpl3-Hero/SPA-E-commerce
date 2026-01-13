@@ -18,18 +18,18 @@ RSpec.describe Application::UseCases::GetAllProducts do
         result = use_case.call
 
         expect(result).to be_success
-        expect(result.value!.length).to eq(3)
+        expect(result.value![:products].length).to eq(3)
       end
 
       it 'returns products as hashes' do
         result = use_case.call
 
-        product = result.value!.first
+        product = result.value![:products].first
         expect(product).to be_a(Hash)
-        expect(product).to have_key(:id)
-        expect(product).to have_key(:name)
-        expect(product).to have_key(:price)
-        expect(product).to have_key(:category)
+        expect(product).to have_key('id')
+        expect(product).to have_key('name')
+        expect(product).to have_key('price')
+        expect(product).to have_key('category')
       end
     end
 
@@ -38,8 +38,8 @@ RSpec.describe Application::UseCases::GetAllProducts do
         result = use_case.call(filters: { category: 'electronics' })
 
         expect(result).to be_success
-        expect(result.value!.length).to eq(2)
-        expect(result.value!.all? { |p| p[:category] == 'electronics' }).to be true
+        expect(result.value![:products].length).to eq(2)
+        expect(result.value![:products].all? { |p| p['category'] == 'electronics' }).to be true
       end
     end
 
@@ -48,7 +48,7 @@ RSpec.describe Application::UseCases::GetAllProducts do
         result = use_case.call(filters: { limit: 2 })
 
         expect(result).to be_success
-        expect(result.value!.length).to eq(2)
+        expect(result.value![:products].length).to eq(2)
       end
     end
 
@@ -57,7 +57,133 @@ RSpec.describe Application::UseCases::GetAllProducts do
         result = use_case.call(filters: { offset: 1 })
 
         expect(result).to be_success
-        expect(result.value!.length).to eq(2)
+        expect(result.value![:products].length).to eq(2)
+      end
+    end
+
+    context 'with price range filters' do
+      it 'filters by minimum price' do
+        result = use_case.call(filters: { min_price: 15000 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(2)
+        expect(result.value![:products].all? { |p| p['price'] >= 15000 }).to be true
+      end
+
+      it 'filters by maximum price' do
+        result = use_case.call(filters: { max_price: 25000 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(2)
+        expect(result.value![:products].all? { |p| p['price'] <= 25000 }).to be true
+      end
+
+      it 'filters by both min and max price' do
+        result = use_case.call(filters: { min_price: 15000, max_price: 25000 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(1)
+        expect(result.value![:products].first['price']).to eq(20000)
+      end
+
+      it 'handles zero min price' do
+        result = use_case.call(filters: { min_price: 0 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(3)
+      end
+
+      it 'handles negative price filters' do
+        result = use_case.call(filters: { min_price: -100 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(3)
+      end
+    end
+
+    context 'with combined filters' do
+      it 'combines category and price filters' do
+        result = use_case.call(filters: { category: 'electronics', min_price: 15000 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(1)
+        expect(result.value![:products].first['name']).to eq('Product 3')
+      end
+
+      it 'combines all filters together' do
+        result = use_case.call(filters: {
+          category: 'electronics',
+          min_price: 5000,
+          max_price: 35000,
+          limit: 1,
+          offset: 0
+        })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(1)
+      end
+
+      it 'applies limit and offset together' do
+        result = use_case.call(filters: { limit: 1, offset: 1 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(1)
+        expect(result.value![:products].first['name']).to eq('Product 2')
+      end
+    end
+
+    context 'with sorting' do
+      it 'sorts by price ascending' do
+        result = use_case.call(filters: { sort_by: :price })
+
+        expect(result).to be_success
+        prices = result.value![:products].map { |p| p['price'] }
+        expect(prices).to eq([10000, 20000, 30000])
+      end
+
+      it 'sorts by name' do
+        result = use_case.call(filters: { sort_by: :name })
+
+        expect(result).to be_success
+        names = result.value![:products].map { |p| p['name'] }
+        expect(names).to eq(['Product 1', 'Product 2', 'Product 3'])
+      end
+    end
+
+    context 'with edge case filters' do
+      it 'rejects limit of 0' do
+        result = use_case.call(filters: { limit: 0 })
+
+        expect(result).to be_failure
+        expect(result.failure[:type]).to eq(:server_error)
+      end
+
+      it 'handles very large limit' do
+        result = use_case.call(filters: { limit: 1000000 })
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(3)
+      end
+
+      it 'handles offset exceeding total records' do
+        result = use_case.call(filters: { offset: 100 })
+
+        expect(result).to be_success
+        expect(result.value![:products]).to be_empty
+      end
+
+      it 'handles empty filters hash' do
+        result = use_case.call(filters: {})
+
+        expect(result).to be_success
+        expect(result.value![:products].length).to eq(3)
+      end
+
+      it 'rejects nil filters' do
+        result = use_case.call(filters: nil)
+
+        expect(result).to be_failure
+        expect(result.failure[:type]).to eq(:server_error)
       end
     end
 
