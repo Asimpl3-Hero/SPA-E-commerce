@@ -8,6 +8,8 @@
 
 ## 🌐 Producción
 
+![TechVault Demo](public/videos/Review.gif)
+
 **Aplicación en vivo:** [https://techvault.ondeploy.store/](https://techvault.ondeploy.store/)
 
 Visita la aplicación desplegada para ver el proyecto en acción.

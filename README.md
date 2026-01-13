@@ -15,6 +15,8 @@ Una aplicación full-stack de e-commerce educativa que demuestra arquitectura li
 - **Frontend:** [https://techvault.ondeploy.store/](https://techvault.ondeploy.store/)
 - **API + Swagger:** [https://api-techvault.ondeploy.store/swagger-ui.html](https://api-techvault.ondeploy.store/swagger-ui.html)
 
+![TechVault E-Commerce](public/assets/1.jpeg)
+
 ## 📖 Documentación
 
 - 📱 **[Frontend README](frontend/README.md)** - Documentación completa del frontend
