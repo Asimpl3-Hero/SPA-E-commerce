@@ -1,5 +1,19 @@
 # 📱 Documentación Frontend - E-Commerce SPA
 
+![React](https://img.shields.io/badge/React-19.2.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.2.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Redux](https://img.shields.io/badge/Redux_Toolkit-2.11.2-764ABC?style=for-the-badge&logo=redux&logoColor=white)
+![Jest](https://img.shields.io/badge/Jest-Testing-C21325?style=for-the-badge&logo=jest&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS_Modules-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+
+## 🌐 Producción
+
+**Aplicación en vivo:** [https://techvault.ondeploy.store/](https://techvault.ondeploy.store/)
+
+Visita la aplicación desplegada para ver el proyecto en acción.
+
+---
+
 ## 🎯 Visión General
 
 Esta es una **Single Page Application (SPA)** de e-commerce construida con **React 19** y **Vite**, que permite a los usuarios navegar productos, agregar al carrito y realizar pagos en línea a través de **Wompi**.

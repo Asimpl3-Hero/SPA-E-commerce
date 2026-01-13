@@ -1,8 +1,23 @@
 # 💎 Backend API - E-Commerce
 
+![Ruby](https://img.shields.io/badge/Ruby-3.x-CC342D?style=for-the-badge&logo=ruby&logoColor=white)
+![Sinatra](https://img.shields.io/badge/Sinatra-4.0-000000?style=for-the-badge&logo=sinatra&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Sequel](https://img.shields.io/badge/Sequel-ORM-green?style=for-the-badge)
+![Wompi](https://img.shields.io/badge/Wompi-Payment-FF6B6B?style=for-the-badge)
+![RSpec](https://img.shields.io/badge/RSpec-Testing-red?style=for-the-badge)
+
 **API REST con Ruby + Sinatra + PostgreSQL + Wompi**
 
 Implementa **Arquitectura Hexagonal** y **Railway Oriented Programming** para gestionar productos, órdenes y pagos.
+
+---
+
+## 🌐 Producción
+
+**API en vivo:** [https://api-techvault.ondeploy.store/swagger-ui.html](https://api-techvault.ondeploy.store/swagger-ui.html)
+
+Accede a la documentación interactiva de Swagger para explorar y probar todos los endpoints disponibles.
 
 ---
 
