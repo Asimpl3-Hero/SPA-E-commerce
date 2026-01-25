@@ -11,6 +11,7 @@ gem 'rackup', '~> 2.1'
 # Database
 gem 'pg', '~> 1.5'
 gem 'sequel', '~> 5.75'
+gem 'rake', '~> 13.0'
 
 # CORS support
 gem 'rack-cors', '~> 2.0'
