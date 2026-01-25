@@ -1,28 +1,30 @@
 require_relative '../../domain/value_objects/result'
-require_relative '../../infrastructure/adapters/payment/wompi_service'
-require 'oj'
+require_relative '../../domain/entities/order'
 
 module Application
   module UseCases
     class UpdateTransactionStatus
       include Dry::Monads[:result]
 
-      def initialize(database)
-        @db = database
+      def initialize(order_repository:, transaction_repository:, delivery_repository:, product_repository:, payment_gateway:)
+        @order_repository = order_repository
+        @transaction_repository = transaction_repository
+        @delivery_repository = delivery_repository
+        @product_repository = product_repository
+        @payment_gateway = payment_gateway
       end
 
-      # For polling - fetches latest status from Wompi and updates DB
+      # For polling - fetches latest status from payment gateway and updates DB
       def execute(transaction_id, max_attempts: 5, delay_seconds: 3)
         final_statuses = ['APPROVED', 'DECLINED', 'ERROR', 'VOIDED']
 
         max_attempts.times do |attempt|
-          result = fetch_from_wompi(transaction_id)
+          result = fetch_from_payment_gateway(transaction_id)
             .bind { |wompi_data| update_transaction_in_db(transaction_id, wompi_data) }
             .bind { |data| update_order_status(data) }
             .bind { |data| update_stock_if_approved(data) }
             .bind { |data| update_delivery_if_approved(data) }
 
-          # Return result if it's a success with final status or if it's a failure
           if result.success?
             current_status = result.value![:wompi_data][:status]
             return result if final_statuses.include?(current_status)
@@ -30,11 +32,9 @@ module Application
             return result
           end
 
-          # Wait before next attempt (unless it's the last attempt)
           sleep(delay_seconds) unless attempt == max_attempts - 1
         end
 
-        # Max attempts reached, still pending
         Success({
           status: 'PENDING',
           message: 'Transaction is still being processed',
@@ -42,12 +42,12 @@ module Application
         })
       end
 
-      # For webhook - updates DB with data received from Wompi
+      # For webhook - updates DB with data received from payment gateway
       def execute_from_webhook(webhook_data)
         transaction_data = webhook_data[:transaction]
 
         find_transaction_by_wompi_id(transaction_data[:id])
-          .bind { |transaction| update_transaction_in_db(transaction_data[:id], transaction_data) }
+          .bind { |_transaction| update_transaction_in_db(transaction_data[:id], transaction_data) }
           .bind { |data| update_order_status(data) }
           .bind { |data| update_stock_if_approved(data) }
           .bind { |data| update_delivery_if_approved(data) }
@@ -55,8 +55,8 @@ module Application
 
       private
 
-      def fetch_from_wompi(transaction_id)
-        result = Infrastructure::Adapters::Payment::WompiService.get_transaction(transaction_id)
+      def fetch_from_payment_gateway(transaction_id)
+        result = @payment_gateway.get_transaction(transaction_id)
 
         if result[:success]
           Success(result[:data][:data])
@@ -64,135 +64,116 @@ module Application
           Failure({ type: :wompi_error, error: result[:error] })
         end
       rescue => e
-        Failure({ type: :server_error, message: "Failed to fetch from Wompi: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to fetch from payment gateway: #{e.message}" })
       end
 
       def find_transaction_by_wompi_id(wompi_transaction_id)
-        transaction = @db[:transactions]
-          .where(wompi_transaction_id: wompi_transaction_id)
-          .first
+        transaction = @transaction_repository.find_by_wompi_id(wompi_transaction_id)
 
         if transaction
           Success(transaction)
         else
-          Failure({ type: :not_found, message: 'Transaction', wompi_transaction_id)
+          Failure({ type: :not_found, message: "Transaction with wompi_id #{wompi_transaction_id} not found" })
         end
       end
 
       def update_transaction_in_db(transaction_id, wompi_data)
-        transaction_record = @db[:transactions]
-          .where(wompi_transaction_id: transaction_id)
-          .first
+        transaction = @transaction_repository.find_by_wompi_id(transaction_id)
 
-        return Failure({ type: :not_found, message: 'Transaction', transaction_id) unless transaction_record
+        return Failure({ type: :not_found, message: "Transaction #{transaction_id} not found" }) unless transaction
 
-        # Store previous status to detect status changes
-        previous_status = transaction_record[:status]
+        previous_status = transaction.status
 
-        @db[:transactions].where(id: transaction_record[:id]).update(
-          status: wompi_data[:status],
-          payment_data: Oj.dump(wompi_data),
-          updated_at: Time.now
+        @transaction_repository.update_status(
+          transaction.id,
+          wompi_data[:status],
+          payment_data: wompi_data
         )
 
         Success({
-          transaction_id: transaction_record[:id],
+          transaction_id: transaction.id,
           wompi_data: wompi_data,
           previous_status: previous_status
         })
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update transaction: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to update transaction: #{e.message}" })
       end
 
       def update_order_status(data)
-        order = @db[:orders].where(transaction_id: data[:transaction_id]).first
+        order = find_order_by_transaction(data[:transaction_id])
 
-        return Failure({ type: :not_found, message: 'Order for transaction', data[:transaction_id]) unless order
+        return Failure({ type: :not_found, message: "Order for transaction #{data[:transaction_id]} not found" }) unless order
 
-        order_status = map_wompi_status(data[:wompi_data][:status])
+        order_status = Domain::Entities::Order.map_wompi_status(data[:wompi_data][:status])
 
-        @db[:orders].where(id: order[:id]).update(
-          status: order_status,
-          updated_at: Time.now
-        )
+        @order_repository.update_status(order.id, order_status)
 
         Success(data.merge(
-          order_id: order[:id],
+          order_id: order.id,
           order_status: order_status,
-          items: Oj.load(order[:items], symbol_keys: true),
-          delivery_id: order[:delivery_id]
+          items: order.items,
+          delivery_id: order.delivery_id
         ))
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update order status: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to update order status: #{e.message}" })
+      end
+
+      def find_order_by_transaction(transaction_id)
+        # Find order that has this transaction_id
+        # This requires iterating or a specific query method
+        # For now, we'll use the reference from the transaction
+        transaction = @transaction_repository.find_by_id(transaction_id)
+        return nil unless transaction
+
+        @order_repository.find_by_reference(transaction.reference)
       end
 
       def update_stock_if_approved(data)
-        # Only update stock if status changed to APPROVED
         if data[:wompi_data][:status] == 'APPROVED' && data[:previous_status] != 'APPROVED'
           update_product_stock(data[:items], :decrement)
         end
 
         Success(data)
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update stock: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to update stock: #{e.message}" })
       end
 
       def update_delivery_if_approved(data)
-        # Only update delivery if status changed to APPROVED
         if data[:wompi_data][:status] == 'APPROVED' &&
            data[:previous_status] != 'APPROVED' &&
            data[:delivery_id]
 
-          @db[:deliveries].where(id: data[:delivery_id]).update(
-            status: 'assigned',
-            estimated_delivery_date: Time.now + (3 * 24 * 60 * 60),
-            updated_at: Time.now
+          estimated_date = Time.now + (3 * 24 * 60 * 60)
+          @delivery_repository.update_status(
+            data[:delivery_id],
+            'assigned',
+            estimated_delivery_date: estimated_date
           )
         end
 
         Success(data)
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update delivery: #{e.message}")
-      end
-
-      def map_wompi_status(wompi_status)
-        case wompi_status
-        when 'APPROVED'
-          'approved'
-        when 'DECLINED'
-          'declined'
-        when 'VOIDED'
-          'voided'
-        when 'ERROR'
-          'error'
-        when 'PENDING'
-          'processing'
-        else
-          'pending'
-        end
+        Failure({ type: :server_error, message: "Failed to update delivery: #{e.message}" })
       end
 
       def update_product_stock(items, operation)
+        return unless items.is_a?(Array)
+
         items.each do |item|
           product_id = item[:product_id]
           quantity = item[:quantity]
 
-          product = @db[:products].where(id: product_id).first
+          product = @product_repository.find_by_id(product_id)
           next unless product
 
-          if operation == :decrement
-            new_stock = [product[:stock] - quantity, 0].max
-            @db[:products].where(id: product_id).update(
-              stock: new_stock,
-              updated_at: Time.now
-            )
-          elsif operation == :increment
-            new_stock = product[:stock] + quantity
-            @db[:products].where(id: product_id).update(
-              stock: new_stock,
-              updated_at: Time.now
-            )
+          current_stock = product.stock
+          new_stock = if operation == :decrement
+            [current_stock - quantity, 0].max
+          else
+            current_stock + quantity
           end
+
+          @product_repository.update(product_id, { stock: new_stock })
         end
       end
     end

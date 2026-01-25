@@ -49,6 +49,10 @@ services:
     volumes:
       - ./db:/app/db
     restart: unless-stopped
+    command: >
+      sh -c "bundle exec rake db:migrate &&
+             bundle exec rake db:seed &&
+             bundle exec rackup -o 0.0.0.0 -p 4567"
 
 networks:
   shared-network:

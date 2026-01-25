@@ -1,38 +1,63 @@
 require_relative '../../domain/value_objects/result'
-require_relative '../../infrastructure/adapters/payment/wompi_service'
-require 'oj'
+require_relative '../../domain/entities/order'
 
 module Application
   module UseCases
     class ProcessPayment
       include Dry::Monads[:result]
 
-      def initialize(database)
-        @db = database
+      def initialize(order_repository:, transaction_repository:, delivery_repository:, product_repository:, payment_gateway:)
+        @order_repository = order_repository
+        @transaction_repository = transaction_repository
+        @delivery_repository = delivery_repository
+        @product_repository = product_repository
+        @payment_gateway = payment_gateway
       end
 
       def execute(order_data, payment_method)
         get_acceptance_token
           .bind { |token| prepare_transaction_params(order_data, payment_method, token) }
-          .bind { |params| call_wompi_api(params) }
+          .bind { |params| call_payment_gateway(params) }
           .bind { |result| create_transaction_record(order_data, payment_method, result) }
           .bind { |result| update_order_with_transaction(order_data, result) }
           .bind { |result| update_stock_if_approved(order_data, result) }
           .bind { |result| update_delivery_if_approved(order_data, result) }
       end
 
+      # Create a failed transaction record when payment fails
+      def create_failed_transaction(order_data, payment_method, error)
+        payment_type = payment_method[:type] || 'CARD'
+
+        transaction = @transaction_repository.create({
+          reference: order_data[:reference],
+          amount_in_cents: order_data[:amount_in_cents],
+          currency: order_data[:currency] || 'COP',
+          status: 'ERROR',
+          payment_method_type: payment_type,
+          payment_data: error
+        })
+
+        @order_repository.update_transaction(
+          order_data[:order_id],
+          transaction.id,
+          'error'
+        )
+
+        transaction
+      end
+
       private
 
       def get_acceptance_token
-        token = Infrastructure::Adapters::Payment::WompiService.get_acceptance_token
+        token = @payment_gateway.get_acceptance_token
 
         if token
           Success(token)
         else
-          Failure({ type: :server_error, message: 'Failed to get acceptance token')
+          Failure({ type: :server_error, message: 'Failed to get acceptance token' })
         end
       rescue => e
-        Failure({ type: :server_error, message: "Error getting acceptance token: #{e.message}")
+        Failure({ type: :server_error, message: "Error getting acceptance token: #{e.message}" })
       end
 
       def prepare_transaction_params(order_data, payment_method, acceptance_token)
@@ -51,7 +76,6 @@ module Application
           shipping_address: order_data[:shipping_address]
         }
 
-        # Add payment-specific params
         if payment_type == 'CARD'
           params[:payment_token] = payment_method[:token]
         elsif payment_type == 'NEQUI'
@@ -61,8 +85,8 @@ module Application
         Success(params)
       end
 
-      def call_wompi_api(params)
-        result = Infrastructure::Adapters::Payment::WompiService.create_transaction(params)
+      def call_payment_gateway(params)
+        result = @payment_gateway.create_transaction(params)
 
         if result[:success]
           Success(result[:data][:data])
@@ -70,13 +94,13 @@ module Application
           Failure({ type: :payment_failed, error: result[:error], reference: params[:reference] })
         end
       rescue => e
-        Failure({ type: :server_error, message: "Wompi API error: #{e.message}")
+        Failure({ type: :server_error, message: "Payment gateway error: #{e.message}" })
       end
 
       def create_transaction_record(order_data, payment_method, wompi_data)
         payment_type = payment_method[:type] || 'CARD'
 
-        transaction_id = @db[:transactions].insert(
+        transaction = @transaction_repository.create({
           wompi_transaction_id: wompi_data[:id],
           reference: order_data[:reference],
           amount_in_cents: order_data[:amount_in_cents],
@@ -84,32 +108,30 @@ module Application
           status: wompi_data[:status],
           payment_method_type: payment_type,
           payment_method_token: payment_type == 'CARD' ? payment_method[:token] : nil,
-          payment_data: Oj.dump(wompi_data),
-          created_at: Time.now,
-          updated_at: Time.now
-        )
+          payment_data: wompi_data
+        })
 
         Success({
-          transaction_id: transaction_id,
+          transaction_id: transaction.id,
           wompi_data: wompi_data,
           order_data: order_data
         })
       rescue => e
-        Failure({ type: :server_error, message: "Failed to create transaction record: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to create transaction record: #{e.message}" })
       end
 
       def update_order_with_transaction(order_data, result)
-        order_status = map_wompi_status(result[:wompi_data][:status])
+        order_status = Domain::Entities::Order.map_wompi_status(result[:wompi_data][:status])
 
-        @db[:orders].where(id: order_data[:order_id]).update(
-          transaction_id: result[:transaction_id],
-          status: order_status,
-          updated_at: Time.now
+        @order_repository.update_transaction(
+          order_data[:order_id],
+          result[:transaction_id],
+          order_status
         )
 
         Success(result.merge(order_status: order_status))
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update order: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to update order: #{e.message}" })
       end
 
       def update_stock_if_approved(order_data, result)
@@ -119,38 +141,22 @@ module Application
 
         Success(result)
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update stock: #{e.message}")
+        Failure({ type: :server_error, message: "Failed to update stock: #{e.message}" })
       end
 
       def update_delivery_if_approved(order_data, result)
         if result[:wompi_data][:status] == 'APPROVED' && order_data[:delivery_id]
-          @db[:deliveries].where(id: order_data[:delivery_id]).update(
-            status: 'assigned',
-            estimated_delivery_date: Time.now + (3 * 24 * 60 * 60),
-            updated_at: Time.now
+          estimated_date = Time.now + (3 * 24 * 60 * 60)
+          @delivery_repository.update_status(
+            order_data[:delivery_id],
+            'assigned',
+            estimated_delivery_date: estimated_date
           )
         end
 
         Success(result)
       rescue => e
-        Failure({ type: :server_error, message: "Failed to update delivery: #{e.message}")
-      end
-
-      def map_wompi_status(wompi_status)
-        case wompi_status
-        when 'APPROVED'
-          'approved'
-        when 'DECLINED'
-          'declined'
-        when 'VOIDED'
-          'voided'
-        when 'ERROR'
-          'error'
-        when 'PENDING'
-          'processing'
-        else
-          'pending'
-        end
+        Failure({ type: :server_error, message: "Failed to update delivery: #{e.message}" })
       end
 
       def update_product_stock(items, operation)
@@ -158,22 +164,17 @@ module Application
           product_id = item[:product_id]
           quantity = item[:quantity]
 
-          product = @db[:products].where(id: product_id).first
+          product = @product_repository.find_by_id(product_id)
           next unless product
 
-          if operation == :decrement
-            new_stock = [product[:stock] - quantity, 0].max
-            @db[:products].where(id: product_id).update(
-              stock: new_stock,
-              updated_at: Time.now
-            )
-          elsif operation == :increment
-            new_stock = product[:stock] + quantity
-            @db[:products].where(id: product_id).update(
-              stock: new_stock,
-              updated_at: Time.now
-            )
+          current_stock = product.stock
+          new_stock = if operation == :decrement
+            [current_stock - quantity, 0].max
+          else
+            current_stock + quantity
           end
+
+          @product_repository.update(product_id, { stock: new_stock })
         end
       end
     end

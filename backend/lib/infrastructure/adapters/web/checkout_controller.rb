@@ -1,20 +1,22 @@
 require 'sinatra/base'
 require 'oj'
-require_relative '../../../../config/database'
-require_relative '../payment/wompi_service'
-require_relative '../../../application/use_cases/create_order'
-require_relative '../../../application/use_cases/process_payment'
-require_relative '../../../application/use_cases/update_transaction_status'
 
 module Infrastructure
   module Adapters
     module Web
       class CheckoutController < Sinatra::Base
-        # Database connection
-        DB = Config::Database.connection
+        # Use cases are injected via class methods
+        class << self
+          attr_accessor :create_order_use_case,
+                        :process_payment_use_case,
+                        :process_existing_order_payment_use_case,
+                        :get_order_use_case,
+                        :update_transaction_status_use_case,
+                        :payment_gateway
+        end
 
         # POST /api/checkout/create-order
-        # Creates order with customer, delivery, and processes payment with Wompi
+        # Creates order with customer, delivery, and processes payment
         post '/api/checkout/create-order' do
           content_type :json
 
@@ -22,101 +24,80 @@ module Infrastructure
             order_data = Oj.load(request.body.read, symbol_keys: true)
             order_data[:redirect_url] = "#{request.base_url}/order-confirmation"
 
-            # Start database transaction for atomicity
-            result = DB.transaction do
-              # Create order using Use Case
-              create_order_uc = Application::UseCases::CreateOrder.new(DB)
-              order_result = create_order_uc.execute(order_data)
+            # Create order using Use Case
+            order_result = self.class.create_order_use_case.execute(order_data)
 
-              # Handle order creation failure
-              if order_result.failure?
-                error_data = order_result.failure
-                status_code = error_data[:type] == :validation_error ? 400 : 500
-                halt status_code, Oj.dump({
-                  success: false,
-                  error: error_data[:message],
-                  details: error_data[:details]
-                }, mode: :compat)
-              end
+            if order_result.failure?
+              error_data = order_result.failure
+              status_code = error_data[:type] == :validation_error ? 400 : 500
+              halt status_code, Oj.dump({
+                success: false,
+                error: error_data[:message],
+                details: error_data[:details]
+              }, mode: :compat)
+            end
 
-              order = order_result.value!
+            order = order_result.value!
 
-              # Process payment if payment method is provided
-              if order_data[:payment_method] && (order_data[:payment_method][:token] || order_data[:payment_method][:phone_number])
-                process_payment_uc = Application::UseCases::ProcessPayment.new(DB)
+            # Process payment if payment method is provided
+            if order_data[:payment_method] && (order_data[:payment_method][:token] || order_data[:payment_method][:phone_number])
+              payment_data = order.merge(
+                customer_email: order_data[:customer_email],
+                customer_name: order_data[:customer_name],
+                customer_phone: order_data[:customer_phone],
+                shipping_address: order_data[:shipping_address],
+                redirect_url: order_data[:redirect_url]
+              )
 
-                payment_data = order.merge(
-                  customer_email: order_data[:customer_email],
-                  customer_name: order_data[:customer_name],
-                  customer_phone: order_data[:customer_phone],
-                  shipping_address: order_data[:shipping_address],
-                  redirect_url: order_data[:redirect_url]
+              payment_result = self.class.process_payment_use_case.execute(payment_data, order_data[:payment_method])
+
+              if payment_result.failure?
+                error = payment_result.failure
+
+                # Create failed transaction record via use case
+                self.class.process_payment_use_case.create_failed_transaction(
+                  order,
+                  order_data[:payment_method],
+                  error
                 )
 
-                payment_result = process_payment_uc.execute(payment_data, order_data[:payment_method])
-
-                if payment_result.failure?
-                  error = payment_result.failure
-
-                  # Create failed transaction record
-                  payment_type = order_data[:payment_method][:type] || 'CARD'
-                  transaction_id = DB[:transactions].insert(
-                    reference: order[:reference],
-                    amount_in_cents: order[:amount_in_cents],
-                    currency: order[:currency],
-                    status: 'ERROR',
-                    payment_method_type: payment_type,
-                    payment_data: Oj.dump(error),
-                    created_at: Time.now,
-                    updated_at: Time.now
-                  )
-
-                  DB[:orders].where(id: order[:order_id]).update(
-                    transaction_id: transaction_id,
-                    status: 'error',
-                    updated_at: Time.now
-                  )
-
-                  halt 400, Oj.dump({
-                    success: false,
-                    error: error[:error] || error[:message]
-                  }, mode: :compat)
-                end
-
-                payment = payment_result.value!
-
-                status 201
-                return Oj.dump({
-                  success: true,
-                  order: {
-                    id: order[:order_id],
-                    reference: order[:reference],
-                    amount_in_cents: order[:amount_in_cents],
-                    currency: order[:currency],
-                    status: payment[:order_status]
-                  },
-                  transaction: {
-                    id: payment[:wompi_data][:id],
-                    status: payment[:wompi_data][:status]
-                  }
+                halt 400, Oj.dump({
+                  success: false,
+                  error: error[:error] || error[:message]
                 }, mode: :compat)
               end
 
-              # Return order without payment processing
-              {
+              payment = payment_result.value!
+
+              status 201
+              return Oj.dump({
                 success: true,
                 order: {
                   id: order[:order_id],
                   reference: order[:reference],
                   amount_in_cents: order[:amount_in_cents],
                   currency: order[:currency],
-                  status: 'pending'
+                  status: payment[:order_status]
+                },
+                transaction: {
+                  id: payment[:wompi_data][:id],
+                  status: payment[:wompi_data][:status]
                 }
-              }
-            end # DB.transaction
+              }, mode: :compat)
+            end
 
+            # Return order without payment processing
             status 201
-            Oj.dump(result, mode: :compat)
+            Oj.dump({
+              success: true,
+              order: {
+                id: order[:order_id],
+                reference: order[:reference],
+                amount_in_cents: order[:amount_in_cents],
+                currency: order[:currency],
+                status: 'pending'
+              }
+            }, mode: :compat)
           rescue Oj::ParseError
             status 400
             Oj.dump({ error: 'Invalid JSON' }, mode: :compat)
@@ -139,150 +120,33 @@ module Infrastructure
           begin
             payment_data = Oj.load(request.body.read, symbol_keys: true)
 
-            # Find order by reference with joins
-            order = DB[:orders]
-              .left_join(:customers, id: :customer_id)
-              .left_join(:deliveries, id: :delivery_id)
-              .where(Sequel[:orders][:reference] => payment_data[:reference])
-              .select(
-                Sequel[:orders][:id].as(:order_id),
-                Sequel[:orders][:reference],
-                Sequel[:orders][:amount_in_cents],
-                Sequel[:orders][:currency],
-                Sequel[:orders][:items],
-                Sequel[:customers][:email].as(:customer_email),
-                Sequel[:customers][:full_name].as(:customer_name),
-                Sequel[:customers][:phone_number].as(:customer_phone),
-                Sequel[:deliveries][:id].as(:delivery_id)
-              )
-              .first
+            result = self.class.process_existing_order_payment_use_case.execute(payment_data)
 
-            unless order
-              status 404
-              return Oj.dump({ error: 'Order not found' }, mode: :compat)
-            end
+            if result.success?
+              data = result.value!
+              wompi_data = data[:wompi_data]
 
-            DB.transaction do
-              # Get acceptance token from Wompi
-              acceptance_token = Payment::WompiService.get_acceptance_token
-
-              unless acceptance_token
-                status 500
-                return Oj.dump({ error: 'Failed to get acceptance token' }, mode: :compat)
-              end
-
-              # Get shipping address if exists
-              shipping_address = nil
-              if order[:delivery_id]
-                delivery = DB[:deliveries].where(id: order[:delivery_id]).first
-                if delivery
-                  shipping_address = {
-                    address_line_1: delivery[:address_line_1],
-                    address_line_2: delivery[:address_line_2],
-                    city: delivery[:city],
-                    region: delivery[:region],
-                    country: delivery[:country],
-                    postal_code: delivery[:postal_code],
-                    phone_number: delivery[:phone_number]
-                  }
-                end
-              end
-
-              # Create transaction with Wompi
-              transaction_params = {
-                acceptance_token: acceptance_token[:acceptance_token],
-                amount_in_cents: order[:amount_in_cents],
-                currency: order[:currency],
-                customer_email: order[:customer_email],
-                full_name: order[:customer_name],
-                phone_number: order[:customer_phone],
-                payment_method_type: payment_data[:payment_method_type],
-                payment_token: payment_data[:payment_token],
-                reference: order[:reference],
-                redirect_url: payment_data[:redirect_url],
-                shipping_address: shipping_address
-              }
-
-              result = Payment::WompiService.create_transaction(transaction_params)
-
-              if result[:success]
-                wompi_data = result[:data][:data]
-
-                # Create transaction record
-                transaction_id = DB[:transactions].insert(
-                  wompi_transaction_id: wompi_data[:id],
-                  reference: order[:reference],
-                  amount_in_cents: order[:amount_in_cents],
-                  currency: order[:currency],
+              status 200
+              Oj.dump({
+                success: true,
+                transaction: {
+                  id: wompi_data[:id],
                   status: wompi_data[:status],
-                  payment_method_type: payment_data[:payment_method_type],
-                  payment_method_token: payment_data[:payment_token],
-                  payment_data: Oj.dump(wompi_data),
-                  created_at: Time.now,
-                  updated_at: Time.now
-                )
+                  reference: wompi_data[:reference],
+                  payment_link_url: wompi_data[:payment_link_url],
+                  redirect_url: wompi_data[:redirect_url]
+                }
+              }, mode: :compat)
+            else
+              error = result.failure
+              status_code = error[:type] == :not_found ? 404 : 400
 
-                # Update order
-                order_status = map_wompi_status(wompi_data[:status])
-                DB[:orders].where(id: order[:order_id]).update(
-                  transaction_id: transaction_id,
-                  status: order_status,
-                  updated_at: Time.now
-                )
-
-                # Update stock if approved
-                if wompi_data[:status] == 'APPROVED'
-                  items = Oj.load(order[:items], symbol_keys: true)
-                  update_product_stock(items, :decrement)
-
-                  # Update delivery status
-                  if order[:delivery_id]
-                    DB[:deliveries].where(id: order[:delivery_id]).update(
-                      status: 'assigned',
-                      estimated_delivery_date: Time.now + (3 * 24 * 60 * 60),
-                      updated_at: Time.now
-                    )
-                  end
-                end
-
-                status 200
-                Oj.dump({
-                  success: true,
-                  transaction: {
-                    id: wompi_data[:id],
-                    status: wompi_data[:status],
-                    reference: wompi_data[:reference],
-                    payment_link_url: wompi_data[:payment_link_url],
-                    redirect_url: wompi_data[:redirect_url]
-                  }
-                }, mode: :compat)
-              else
-                # Create failed transaction
-                transaction_id = DB[:transactions].insert(
-                  reference: order[:reference],
-                  amount_in_cents: order[:amount_in_cents],
-                  currency: order[:currency],
-                  status: 'ERROR',
-                  payment_method_type: payment_data[:payment_method_type],
-                  payment_data: Oj.dump(result[:error]),
-                  created_at: Time.now,
-                  updated_at: Time.now
-                )
-
-                # Update order status to error
-                DB[:orders].where(id: order[:order_id]).update(
-                  transaction_id: transaction_id,
-                  status: 'error',
-                  updated_at: Time.now
-                )
-
-                status 400
-                Oj.dump({
-                  success: false,
-                  error: result[:error]
-                }, mode: :compat)
-              end
-            end # DB.transaction
+              status status_code
+              Oj.dump({
+                success: false,
+                error: error[:error] || error[:message]
+              }, mode: :compat)
+            end
           rescue Oj::ParseError
             status 400
             Oj.dump({ error: 'Invalid JSON' }, mode: :compat)
@@ -303,75 +167,26 @@ module Infrastructure
           content_type :json
 
           begin
-            # Get order with all related data
-            order = DB[:orders]
-              .left_join(:customers, id: Sequel[:orders][:customer_id])
-              .left_join(:transactions, id: Sequel[:orders][:transaction_id])
-              .left_join(:deliveries, id: Sequel[:orders][:delivery_id])
-              .where(Sequel[:orders][:reference] => params[:reference])
-              .select(
-                Sequel[:orders][:id].as(:order_id),
-                Sequel[:orders][:reference],
-                Sequel[:orders][:amount_in_cents],
-                Sequel[:orders][:currency],
-                Sequel[:orders][:status],
-                Sequel[:orders][:items],
-                Sequel[:orders][:created_at],
-                Sequel[:orders][:updated_at],
-                Sequel[:customers][:email].as(:customer_email),
-                Sequel[:customers][:full_name].as(:customer_name),
-                Sequel[:customers][:phone_number].as(:customer_phone),
-                Sequel[:transactions][:wompi_transaction_id],
-                Sequel[:transactions][:status].as(:transaction_status),
-                Sequel[:deliveries][:address_line_1],
-                Sequel[:deliveries][:address_line_2],
-                Sequel[:deliveries][:city],
-                Sequel[:deliveries][:region],
-                Sequel[:deliveries][:country],
-                Sequel[:deliveries][:postal_code],
-                Sequel[:deliveries][:status].as(:delivery_status)
-              )
-              .first
+            result = self.class.get_order_use_case.execute(params[:reference])
 
-            unless order
-              status 404
-              return Oj.dump({ error: 'Order not found' }, mode: :compat)
+            if result.success?
+              order = result.value!
+
+              status 200
+              Oj.dump({
+                success: true,
+                order: order
+              }, mode: :compat)
+            else
+              error = result.failure
+              status_code = error[:type] == :not_found ? 404 : 500
+
+              status status_code
+              Oj.dump({
+                success: false,
+                error: error[:message]
+              }, mode: :compat)
             end
-
-            # Build shipping address if exists
-            shipping_address = nil
-            if order[:address_line_1]
-              shipping_address = {
-                address_line_1: order[:address_line_1],
-                address_line_2: order[:address_line_2],
-                city: order[:city],
-                region: order[:region],
-                country: order[:country],
-                postal_code: order[:postal_code],
-                delivery_status: order[:delivery_status]
-              }
-            end
-
-            status 200
-            Oj.dump({
-              success: true,
-              order: {
-                id: order[:order_id],
-                reference: order[:reference],
-                customer_email: order[:customer_email],
-                customer_name: order[:customer_name],
-                customer_phone: order[:customer_phone],
-                amount_in_cents: order[:amount_in_cents],
-                currency: order[:currency],
-                status: order[:status],
-                wompi_transaction_id: order[:wompi_transaction_id],
-                transaction_status: order[:transaction_status],
-                items: Oj.load(order[:items], symbol_keys: true),
-                shipping_address: shipping_address,
-                created_at: order[:created_at],
-                updated_at: order[:updated_at]
-              }
-            }, mode: :compat)
           rescue => e
             puts "Error in get order: #{e.message}"
             puts e.backtrace.join("\n")
@@ -384,15 +199,14 @@ module Infrastructure
         end
 
         # GET /api/checkout/transaction-status/:transaction_id
-        # Poll transaction status from Wompi with retries
+        # Poll transaction status with retries
         get '/api/checkout/transaction-status/:transaction_id' do
           content_type :json
 
           transaction_id = params[:transaction_id]
 
           begin
-            update_status_uc = Application::UseCases::UpdateTransactionStatus.new(DB)
-            result = update_status_uc.execute(transaction_id)
+            result = self.class.update_transaction_status_use_case.execute(transaction_id)
 
             if result.success?
               data = result.value!
@@ -447,11 +261,11 @@ module Infrastructure
         end
 
         # GET /api/checkout/acceptance-token
-        # Get Wompi acceptance token
+        # Get payment gateway acceptance token
         get '/api/checkout/acceptance-token' do
           content_type :json
 
-          acceptance_token = Payment::WompiService.get_acceptance_token
+          acceptance_token = self.class.payment_gateway.get_acceptance_token
 
           if acceptance_token
             status 200
@@ -469,7 +283,7 @@ module Infrastructure
         end
 
         # POST /api/checkout/webhook
-        # Webhook endpoint for Wompi payment notifications
+        # Webhook endpoint for payment notifications
         post '/api/checkout/webhook' do
           content_type :json
 
@@ -483,7 +297,7 @@ module Infrastructure
             timestamp = request.env['HTTP_X_TIMESTAMP']
 
             # Validate signature
-            unless Payment::WompiService.validate_webhook_signature(payload, signature, timestamp)
+            unless self.class.payment_gateway.validate_webhook_signature(payload, signature, timestamp)
               status 401
               return Oj.dump({ error: 'Invalid signature' }, mode: :compat)
             end
@@ -494,8 +308,7 @@ module Infrastructure
 
             # Only process transaction events
             if event_type == 'transaction.updated'
-              update_status_uc = Application::UseCases::UpdateTransactionStatus.new(DB)
-              result = update_status_uc.execute_from_webhook(webhook_data[:data])
+              result = self.class.update_transaction_status_use_case.execute_from_webhook(webhook_data[:data])
 
               if result.success?
                 status 200
@@ -504,7 +317,7 @@ module Infrastructure
                 error = result.failure
                 puts "Webhook processing error: #{error[:message]}"
 
-                status 200 # Return 200 to prevent Wompi from retrying
+                status 200 # Return 200 to prevent retries
                 return Oj.dump({
                   success: false,
                   message: 'Transaction not found or error processing'

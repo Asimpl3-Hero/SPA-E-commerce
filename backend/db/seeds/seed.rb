@@ -2,13 +2,11 @@ require_relative '../../config/database'
 
 DB = Config::Database.connection
 
-# Clear existing data (in order to respect foreign keys)
-DB[:orders].delete if DB.table_exists?(:orders)
-DB[:deliveries].delete if DB.table_exists?(:deliveries)
-DB[:transactions].delete if DB.table_exists?(:transactions)
-DB[:customers].delete if DB.table_exists?(:customers)
-DB[:products].delete
-DB[:categories].delete
+# Solo ejecutar seeds si la base de datos está vacía
+if DB[:categories].count > 0
+  puts "Database already seeded. Skipping..."
+  exit 0
+end
 
 puts "Seeding database..."
 

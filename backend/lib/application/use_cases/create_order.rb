@@ -1,13 +1,15 @@
 require_relative '../../domain/value_objects/result'
-require 'oj'
+require_relative '../../domain/entities/order'
 
 module Application
   module UseCases
     class CreateOrder
       include Dry::Monads[:result]
 
-      def initialize(database)
-        @db = database
+      def initialize(customer_repository:, delivery_repository:, order_repository:)
+        @customer_repository = customer_repository
+        @delivery_repository = delivery_repository
+        @order_repository = order_repository
       end
 
       def execute(order_data)
@@ -31,28 +33,13 @@ module Application
       end
 
       def create_or_update_customer(order_data)
-        customer = @db[:customers].where(email: order_data[:customer_email]).first
+        customer = @customer_repository.create_or_update_by_email({
+          email: order_data[:customer_email],
+          full_name: order_data[:customer_name],
+          phone_number: order_data[:customer_phone]
+        })
 
-        customer_id = if customer
-          # Update existing customer
-          @db[:customers].where(id: customer[:id]).update(
-            full_name: order_data[:customer_name],
-            phone_number: order_data[:customer_phone],
-            updated_at: Time.now
-          )
-          customer[:id]
-        else
-          # Create new customer
-          @db[:customers].insert(
-            email: order_data[:customer_email],
-            full_name: order_data[:customer_name],
-            phone_number: order_data[:customer_phone],
-            created_at: Time.now,
-            updated_at: Time.now
-          )
-        end
-
-        Success(order_data.merge(customer_id: customer_id))
+        Success(order_data.merge(customer_id: customer.id))
       rescue => e
         Failure({ type: :server_error, message: "Failed to create/update customer: #{e.message}" })
       end
@@ -62,7 +49,7 @@ module Application
 
         if order_data[:shipping_address]
           addr = order_data[:shipping_address]
-          delivery_id = @db[:deliveries].insert(
+          delivery = @delivery_repository.create({
             address_line_1: addr[:address_line_1] || addr[:address],
             address_line_2: addr[:address_line_2],
             city: addr[:city],
@@ -71,10 +58,9 @@ module Application
             postal_code: addr[:postal_code],
             phone_number: addr[:phone_number] || order_data[:customer_phone],
             delivery_notes: addr[:notes],
-            status: 'pending',
-            created_at: Time.now,
-            updated_at: Time.now
-          )
+            status: 'pending'
+          })
+          delivery_id = delivery.id
         end
 
         Success(order_data.merge(delivery_id: delivery_id))
@@ -83,35 +69,29 @@ module Application
       end
 
       def create_order_record(order_data)
-        reference = generate_reference
+        reference = Domain::Entities::Order.generate_reference
 
-        order_id = @db[:orders].insert(
+        order = @order_repository.create({
           reference: reference,
           customer_id: order_data[:customer_id],
           delivery_id: order_data[:delivery_id],
           amount_in_cents: order_data[:amount_in_cents],
           currency: order_data[:currency] || 'COP',
           status: 'pending',
-          items: Oj.dump(order_data[:items]),
-          created_at: Time.now,
-          updated_at: Time.now
-        )
+          items: order_data[:items]
+        })
 
         Success({
-          order_id: order_id,
-          reference: reference,
-          customer_id: order_data[:customer_id],
-          delivery_id: order_data[:delivery_id],
-          amount_in_cents: order_data[:amount_in_cents],
-          currency: order_data[:currency] || 'COP',
-          items: order_data[:items]
+          order_id: order.id,
+          reference: order.reference,
+          customer_id: order.customer_id,
+          delivery_id: order.delivery_id,
+          amount_in_cents: order.amount_in_cents,
+          currency: order.currency,
+          items: order.items
         })
       rescue => e
         Failure({ type: :server_error, message: "Failed to create order: #{e.message}" })
-      end
-
-      def generate_reference
-        "ORDER-#{Time.now.to_i}-#{rand(1000..9999)}"
       end
     end
   end
