@@ -6,7 +6,7 @@ SimpleCov.start do
   add_filter '/config/'
 
   add_group 'Domain Entities', 'lib/domain/entities'
-  add_group 'Domain Value Objects', 'lib/domain/value_objects'
+  add_group 'Application Services', 'lib/application/services'
   add_group 'Application Use Cases', 'lib/application/use_cases'
   add_group 'Application Ports', 'lib/application/ports'
   add_group 'Infrastructure Repositories', 'lib/infrastructure/adapters/repositories'
@@ -28,8 +28,6 @@ require 'dotenv/load'
 # Require application files
 require_relative '../lib/domain/entities/product'
 require_relative '../lib/domain/entities/category'
-require_relative '../lib/domain/value_objects/money'
-require_relative '../lib/domain/value_objects/result'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

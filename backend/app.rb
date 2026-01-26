@@ -77,7 +77,8 @@ class App < Sinatra::Base
   create_order_use_case = Application::UseCases::CreateOrder.new(
     customer_repository: customer_repository,
     delivery_repository: delivery_repository,
-    order_repository: order_repository
+    order_repository: order_repository,
+    product_repository: product_repository
   )
 
   process_payment_use_case = Application::UseCases::ProcessPayment.new(

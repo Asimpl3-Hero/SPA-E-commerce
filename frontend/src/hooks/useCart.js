@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import {
   addItem,
   removeItem,
@@ -10,7 +10,7 @@ import {
   selectIsCartOpen,
   selectTotalItems,
   selectCartTotal,
-} from '@/store/cartSlice';
+} from "@/store/cartSlice";
 
 /**
  * Custom hook for cart operations
@@ -81,7 +81,7 @@ export const useCart = () => {
   const getCartSummary = () => {
     const subtotal = totalPrice;
     const shipping = subtotal >= 50000 ? 0 : 10000;
-    const iva = subtotal * 0.19; // IVA 19%
+    const iva = 19;
     const total = subtotal + shipping + iva;
 
     return {

@@ -1,4 +1,4 @@
-require_relative '../../domain/value_objects/result'
+require 'dry-monads'
 
 module Application
   module UseCases
