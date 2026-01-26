@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Alert } from "./ui/alert";
 import { OrderSummary } from "./checkout/OrderSummary";
 import { CustomerForm } from "./checkout/CustomerForm";
+import { DeliveryForm } from "./checkout/DeliveryForm";
 import { PaymentMethodSelector } from "./checkout/PaymentMethodSelector";
 import { CardForm } from "./checkout/CardForm";
 import { NequiForm } from "./checkout/NequiForm";
@@ -116,6 +117,13 @@ export const CheckoutModal = ({ isOpen, onClose, onSuccess, gateway = "wompi" })
           <CustomerForm
             customerData={state.customerData}
             setCustomerData={actions.setCustomerData}
+            isProcessing={state.isProcessing}
+          />
+
+          {/* Delivery Address */}
+          <DeliveryForm
+            deliveryData={state.deliveryData}
+            setDeliveryData={actions.setDeliveryData}
             isProcessing={state.isProcessing}
           />
 

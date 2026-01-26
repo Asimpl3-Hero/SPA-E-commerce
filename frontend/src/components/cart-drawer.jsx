@@ -111,7 +111,6 @@ export function CartDrawer() {
       },
       summary: {
         subtotal: purchaseData.summary.subtotal,
-        iva: purchaseData.summary.iva,
         shipping: purchaseData.summary.shipping,
         total: purchaseData.summary.total,
       },
@@ -270,12 +269,6 @@ export function CartDrawer() {
                 <span className="cart-drawer-subtotal-value">
                   {formatCurrency(summary.subtotal)}
                 </span>
-              </div>
-
-              {/* IVA */}
-              <div className="cart-drawer-shipping">
-                <span>IVA (19%)</span>
-                <span>{formatCurrency(summary.iva)}</span>
               </div>
 
               {/* Shipping */}

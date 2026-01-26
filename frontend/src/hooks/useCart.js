@@ -81,13 +81,11 @@ export const useCart = () => {
   const getCartSummary = () => {
     const subtotal = totalPrice;
     const shipping = subtotal >= 50000 ? 0 : 10000;
-    const iva = 19;
-    const total = subtotal + shipping + iva;
+    const total = subtotal + shipping;
 
     return {
       subtotal,
       shipping,
-      iva,
       total,
       itemCount: totalItems,
       freeShipping: subtotal >= 50000,

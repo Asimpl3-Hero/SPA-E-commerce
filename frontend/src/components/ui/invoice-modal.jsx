@@ -185,12 +185,6 @@ export const InvoiceModal = ({
                 </span>
               </div>
               <div className="invoice-summary-row">
-                <span className="invoice-summary-label">IVA (19%)</span>
-                <span className="invoice-summary-value">
-                  ${summary.iva.toLocaleString()}
-                </span>
-              </div>
-              <div className="invoice-summary-row">
                 <span className="invoice-summary-label">Envío</span>
                 <span className="invoice-summary-value">
                   {summary.shipping === 0 ? "Gratis" : `$${summary.shipping.toLocaleString()}`}

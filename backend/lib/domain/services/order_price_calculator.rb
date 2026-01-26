@@ -3,7 +3,6 @@ module Domain
     class OrderPriceCalculator
       FREE_SHIPPING_THRESHOLD_CENTS = 5_000_000  # 50,000 COP en centavos
       SHIPPING_COST_CENTS = 1_000_000            # 10,000 COP en centavos
-      IVA_RATE = 0.19                            # 19% IVA Colombia
 
       # Calcula el total de una orden a partir de items con precios ya resueltos
       # @param priced_items [Array<Hash>] Array de items con :price_cents y :quantity
@@ -14,13 +13,11 @@ module Domain
 
         subtotal_cents = calculate_subtotal_cents(priced_items)
         shipping_cents = subtotal_cents >= FREE_SHIPPING_THRESHOLD_CENTS ? 0 : SHIPPING_COST_CENTS
-        iva_cents = (subtotal_cents * IVA_RATE).to_i
-        total_cents = subtotal_cents + shipping_cents + iva_cents
+        total_cents = subtotal_cents + shipping_cents
 
         {
           subtotal_cents: subtotal_cents,
           shipping_cents: shipping_cents,
-          iva_cents: iva_cents,
           total_cents: total_cents
         }
       end
@@ -55,7 +52,6 @@ module Domain
         {
           subtotal_cents: 0,
           shipping_cents: SHIPPING_COST_CENTS,
-          iva_cents: 0,
           total_cents: SHIPPING_COST_CENTS
         }
       end

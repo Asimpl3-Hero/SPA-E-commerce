@@ -69,6 +69,17 @@ export const useUnifiedCheckout = ({
     phone: "",
   });
 
+  // Delivery form state
+  const [deliveryData, setDeliveryData] = useState({
+    address_line_1: "",
+    address_line_2: "",
+    city: "",
+    region: "",
+    country: "CO",
+    postal_code: "",
+    delivery_notes: "",
+  });
+
   /**
    * Update card number and detect card type
    */
@@ -89,7 +100,13 @@ export const useUnifiedCheckout = ({
   const validateForm = () => {
     // Validate customer data
     if (!customerData.email || !customerData.name || !customerData.phone) {
-      setError("Please fill in all customer information");
+      setError("Por favor completa toda la información del cliente");
+      return false;
+    }
+
+    // Validate delivery data
+    if (!deliveryData.address_line_1 || !deliveryData.city || !deliveryData.region) {
+      setError("Por favor completa la dirección de entrega (dirección, ciudad y departamento)");
       return false;
     }
 
@@ -215,11 +232,14 @@ export const useUnifiedCheckout = ({
           quantity: item.quantity,
         })),
         shipping_address: {
-          address_line_1: "Calle 123",
-          city: "Bogota",
-          region: "Bogota DC",
-          country: "CO",
+          address_line_1: deliveryData.address_line_1,
+          address_line_2: deliveryData.address_line_2 || undefined,
+          city: deliveryData.city,
+          region: deliveryData.region,
+          country: deliveryData.country || "CO",
+          postal_code: deliveryData.postal_code || undefined,
           phone_number: customerData.phone,
+          delivery_notes: deliveryData.delivery_notes || undefined,
         },
       };
 
@@ -300,6 +320,7 @@ export const useUnifiedCheckout = ({
       cardType,
       nequiPhone,
       customerData,
+      deliveryData,
       supportedMethods: paymentGateway?.getSupportedMethods() || [],
       gateway: gateway,
     },
@@ -311,6 +332,7 @@ export const useUnifiedCheckout = ({
       handleCardNumberChange,
       setNequiPhone,
       setCustomerData,
+      setDeliveryData,
       handleCheckout,
     },
   };

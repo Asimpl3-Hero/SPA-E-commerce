@@ -549,11 +549,80 @@
   background: hsl(var(--card));
 }
 
+/* Select styling */
+.checkout-form-field select {
+  width: 100%;
+  padding: var(--space-3);
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.checkout-form-field select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+.checkout-form-field select:disabled {
+  background-color: hsl(var(--secondary));
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dark .checkout-form-field select {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
+/* Textarea styling */
+.checkout-form-field textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  font-family: var(--font-body);
+  box-sizing: border-box;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  resize: vertical;
+  min-height: 80px;
+}
+
+.checkout-form-field textarea:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+.checkout-form-field textarea:disabled {
+  background-color: hsl(var(--secondary));
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-form-field textarea::placeholder {
+  color: hsl(var(--muted-foreground) / 0.6);
+}
+
+.dark .checkout-form-field textarea {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+
 /* Form Row for inline fields */
 .checkout-form-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
 }
 
 /* Test Cards Info */
