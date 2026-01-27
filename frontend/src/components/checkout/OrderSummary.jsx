@@ -42,7 +42,7 @@ export const OrderSummary = ({ items, summary }) => {
               : formatCurrency(summary.shipping)}
           </span>
         </div>
-        <div className="chekout-summary-row">
+        <div className="checkout-summary-row">
           <span>IVA (19%)</span>
           <span>{formatCurrency(summary.iva)}</span>
         </div>

@@ -88,6 +88,7 @@ export const useCart = () => {
     return {
       subtotal,
       shipping,
+      iva,
       total,
       itemCount: totalItems,
       freeShipping: subtotal >= 50000,
