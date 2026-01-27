@@ -37,8 +37,14 @@ export const OrderSummary = ({ items, summary }) => {
         <div className="checkout-summary-row">
           <span>Envío</span>
           <span>
-            {summary.shipping === 0 ? "GRATIS" : formatCurrency(summary.shipping)}
+            {summary.shipping === 0
+              ? "GRATIS"
+              : formatCurrency(summary.shipping)}
           </span>
+        </div>
+        <div className="chekout-summary-row">
+          <span>IVA (19%)</span>
+          <span>{formatCurrency(summary.iva)}</span>
         </div>
         <div className="checkout-summary-row checkout-summary-total">
           <span>Total</span>
