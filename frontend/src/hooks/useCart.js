@@ -82,7 +82,7 @@ export const useCart = () => {
     const subtotal = totalPrice;
     const iva = Math.round(subtotal * 0.19);
     const shipping = subtotal >= 50000 ? 0 : 10000;
-    const total = subtotal + shipping;
+    const total = subtotal + shipping + iva;
 
     return {
       subtotal,
