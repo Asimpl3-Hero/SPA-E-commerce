@@ -78,11 +78,12 @@ export const useCart = () => {
     return items.some((item) => item.id === productId);
   };
 
+  const iva = Math.round(totalPrice * 0.19);
+
   const getCartSummary = () => {
     const subtotal = totalPrice;
-    const iva = Math.round(subtotal * 0.19);
     const shipping = subtotal >= 50000 ? 0 : 10000;
-    const total = subtotal + shipping + iva;
+    const total = subtotal + iva + shipping;
 
     return {
       subtotal,
